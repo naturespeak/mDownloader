@@ -182,7 +182,7 @@ void MainWindowDownloader::on_downloading_started(QString)
 void MainWindowDownloader::on_pushButtonAbout_clicked()
 {
     QString about;
-    about = "mDownloader: A GUI download accelerator for GNU/Linux.";
+    about = "mDownloader: A GUI download accelerator.";
     about += QChar::LineSeparator;
     about += "Version: 1.0.1Build004.";
     about += QChar::LineSeparator;
