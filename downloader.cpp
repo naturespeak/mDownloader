@@ -388,7 +388,8 @@ Downloader::save_temp_file_exit(void)
     for(i = 0; i < threadNum; i ++){
         if(blocks[i].state != JOINED){
             blocks[i].ptr_thread->quit();
-            blocks[i].ptr_thread->wait();       //fix me, sometimes wait too long
+            blocks[i].ptr_thread->terminate();
+            blocks[i].ptr_thread->wait();
             blocks[i].bufferFile.close();
         }
     };

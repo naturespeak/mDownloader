@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>518</width>
-    <height>167</height>
+    <width>535</width>
+    <height>112</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -38,13 +38,6 @@
        <widget class="QProgressBar" name="progressBar">
         <property name="value">
          <number>24</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonOpenDir">
-        <property name="text">
-         <string>OpenDir</string>
         </property>
        </widget>
       </item>
@@ -134,34 +127,18 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+       <widget class="QPushButton" name="pushButtonNew">
+        <property name="text">
+         <string>New</string>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+       </widget>
       </item>
-     </layout>
-    </item>
-    <item row="2" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+       <widget class="QPushButton" name="pushButtonOpenDir">
+        <property name="text">
+         <string>OpenDir</string>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>295</width>
-          <height>15</height>
-         </size>
-        </property>
-       </spacer>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonAbout">
@@ -170,26 +147,10 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonNew">
-        <property name="text">
-         <string>New</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionCreate">
    <property name="text">
     <string>Create</string>

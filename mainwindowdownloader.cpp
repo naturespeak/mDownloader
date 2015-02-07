@@ -156,6 +156,7 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
         msgBox.exec();
         event->ignore();
     }
+    WSACleanup();
 }
 
 void MainWindowDownloader::on_downloading_finished(void)
@@ -165,7 +166,6 @@ void MainWindowDownloader::on_downloading_finished(void)
         m_is_downloading_started = false;
         m_is_downloading_finished = true;
         m_is_downloading_paused = true;
-        WSACleanup();
     }
 }
 
