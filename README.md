@@ -11,6 +11,6 @@ It is fast, with maximum 99 threads do the downloading job at the same time, tak
 
 	c) OpenSSL for Windows 32-bit, download from http://slproweb.com/download/Win32OpenSSL-1_0_1L.exe.
 
-2. Install Win32OpenSSL-1_0_1L.exe to C:/OpenSSL-Win32/
+2. Install OpenSSL for Widnows 32-bit to C:/OpenSSL-Win32/
 
 3. Use Qt Creator to open mDownloader.pro and build
