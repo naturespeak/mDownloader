@@ -234,7 +234,7 @@ Downloader::init_threads_from_info(void)
 
     threadNum = task.threadNum > 0 ? task.threadNum : 1;
     block_size = task.fileSize / threadNum;
-    if(block_size <= 0){ // too small file
+    if(block_size <= 20480){ // too small file
         threadNum = 1;
         block_size = task.fileSize;
     }
