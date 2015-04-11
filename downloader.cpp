@@ -85,11 +85,11 @@ Downloader::~Downloader(void)
 int
 Downloader::init_plugin(void)
 {
-    if(task.proxy.get_type() == HTTP_PROXY){
+    if(task.get_proxy_type() == HTTP_PROXY){
         delete plugin;
         plugin = new HttpPlugin;
     }else{
-        switch(task.url.get_protocol()){
+        switch(task.get_protocol()){
         case HTTP:
 #ifdef HAVE_SSL
         case HTTPS:
@@ -109,6 +109,7 @@ Downloader::init_plugin(void)
     return 0;
 };
 
+/* init_plugin, plugin->get_info */
 int
 Downloader::init_task(void)
 {
@@ -121,13 +122,13 @@ _reinit_plugin:
         return -1;
     }
 
-    for(i = 0; task.tryCount <= 0 || i < task.tryCount; i ++){
+    for(i = 0; task.get_tryCount() <= 0 || i < task.get_tryCount(); i ++){
         ret = plugin->get_info(&task);
         if(ret == -1){
             cerr << "Plugin->get_info return -1" << endl;
             return -1;
         }else if(ret == S_REDIRECT){
-            cerr<<"Redirect to: "<<task.url.get_url()<<endl;
+            cerr<<"Redirect to: "<<task.get_url()<<endl;
             goto _reinit_plugin;
         }else if(ret == 0){
             return 0;
@@ -148,7 +149,7 @@ Downloader::init_local_file_name(void)
 
     length = task.get_local_dir() ? strlen(task.get_local_dir()) : 1;
     length += task.get_local_file() ? strlen(task.get_local_file()) :
-                                      strlen(task.url.get_file());
+                                      strlen(task.get_file());
     length += 6;
 
     tmpStr = new char[length];
@@ -156,7 +157,7 @@ Downloader::init_local_file_name(void)
     snprintf( tmpStr, length, "%s/%s.mg!",
               task.get_local_dir() ? task.get_local_dir() : ".",
               task.get_local_file() ? task.get_local_file() :
-                                      task.url.get_file() );
+                                      task.get_file() );
     delete[] localPath;
     delete[] localMg;
     tmpStr[length - 5] = '\0';
@@ -180,7 +181,7 @@ Downloader::init_threads_from_mg(void)
         emit errorHappened(QString("Can not get the info of the temp file"));
         return -1;
     }
-    if(file_stat.st_size < task.fileSize + sizeof(threadNum)){
+    if(file_stat.st_size < task.get_file_size() + sizeof(threadNum)){
         cerr<<"the temp file: \""<<localMg<<"\" is not correct"<<endl;
         error = QString("The temp file: ");
         error += QString(localMg);
@@ -197,9 +198,9 @@ Downloader::init_threads_from_mg(void)
         return -1;
     }
 
-    fseek(fd, task.fileSize, SEEK_CUR);
+    fseek(fd, task.get_file_size(), SEEK_CUR);
     fread(&threadNum, sizeof(threadNum), 1, fd);
-    if(file_stat.st_size != task.fileSize + sizeof(threadNum) + sizeof(off_t)*threadNum*3){
+    if(file_stat.st_size != task.get_file_size() + sizeof(threadNum) + sizeof(off_t)*threadNum*3){
         cerr<<"the temp file: \""<<localMg<<"\" is not correct"<<endl;
         error = QString("The temp file: ");
         error += QString(localMg);
@@ -232,11 +233,11 @@ Downloader::init_threads_from_info(void)
     off_t block_size;
     int i;
 
-    threadNum = task.threadNum > 0 ? task.threadNum : 1;
-    block_size = task.fileSize / threadNum;
+    threadNum = task.get_threadNum()> 0 ? task.get_threadNum() : 1;
+    block_size = task.get_file_size() / threadNum;
     if(block_size <= 20480){ // too small file
         threadNum = 1;
-        block_size = task.fileSize;
+        block_size = task.get_file_size();
     }
 
     delete[] blocks;
@@ -251,7 +252,7 @@ Downloader::init_threads_from_info(void)
         }
     }
 
-    blocks[threadNum - 1].size = task.fileSize - block_size * ( threadNum - 1);
+    blocks[threadNum - 1].size = task.get_file_size() - block_size * ( threadNum - 1);
 
     return 0;
 }
@@ -394,14 +395,14 @@ Downloader::save_temp_file_exit(void)
         }
     };
 
-    if(task.fileSize < 0){
+    if(task.get_file_size() < 0){
         cerr<<"!!!You can not continue in further"<<endl;
         is_downloading = false;
         exit(-1); // Is this right?
     }
 
     fd = fopen(localMg, "r+");
-    fseek(fd, task.fileSize, SEEK_CUR);
+    fseek(fd, task.get_file_size(), SEEK_CUR);
     fwrite(&threadNum, sizeof(threadNum), 1, fd);
     for(i = 0; i < threadNum; i ++){
         fwrite(&blocks[i].startPoint, sizeof(off_t), 1, fd);
@@ -545,7 +546,7 @@ Downloader::directory_download(void)
     int orig_dir_len = 0;
     char *ptr;
 
-    ptr = (char*)task.url.get_dir();
+    ptr = (char*)task.get_dir();
     if(ptr != NULL){
         ptr = strrchr(ptr, '/') ? (strrchr(ptr, '/') + 1) : ptr;
     }
@@ -563,15 +564,20 @@ Downloader::directory_download(void)
         goto _dd_error;
     }
     local_dir = StrDup(buf);
-    if(task.url.get_dir()){
-        orig_dir_len = strlen(task.url.get_dir());
+    if(task.get_dir()){
+        orig_dir_len = strlen(task.get_dir());
     }
     task.set_local_file(NULL);
 
     fd = fopen(tempfile, "r");
-    task.isDirectory = false;
+    task.set_isDirectory(false);
     while(1){
-        if(fread(&task.fileSize, sizeof(off_t), 1, fd) != 1) break;
+        off_t size = 0;
+        if(fread(&size, sizeof(off_t), 1, fd) != 1) {
+            break;
+        } else {
+            task.set_file_size(size);
+        }
         if(fgets(buf, 1024, fd) == NULL) break;
         buf[strlen(buf) - 1] = '\0';
         if(buf[0] == '/'){ // a directory
@@ -589,7 +595,7 @@ Downloader::directory_download(void)
         }else{ // a file
             cout<<"Download file : "<<buf<<endl;
             snprintf(buf2, 1024, "/%s", buf);
-            task.url.reset_url(buf2);
+            task.reset_url(buf2);
             ptr = strrchr(buf, '/');
             if(ptr) *ptr = '\0';
             snprintf(buf2, 1024, "%s%s%s",
@@ -627,14 +633,14 @@ Downloader::file_download(void)
         return 0;
     }
     cout<<"Begin to download: "
-       <<(task.get_local_file() ? task.get_local_file() : task.url.get_file())<<endl;
+       <<(task.get_local_file() ? task.get_local_file() : task.get_file())<<endl;
     char buf[6];
     double time = get_current_time();
-    convert_size(buf, task.fileSize);
+    convert_size(buf, task.get_file_size());
     cout<<"Filesize: "<<buf<<endl;
     emit set_GuiLabelTotal(QString(buf));
 
-    if(task.fileSize == 0){
+    if(task.get_file_size() == 0){
         int fd;
         if( _sopen_s( &fd, localPath, _O_RDWR | _O_CREAT | _O_BINARY, _SH_DENYNO,
                       _S_IREAD | _S_IWRITE ) == 0)
@@ -650,11 +656,11 @@ Downloader::file_download(void)
         }
     }
 
-    if(!task.resumeSupported || task.fileSize < 0){
+    if(!task.get_resumeSupported() || task.get_file_size() < 0){
         threadNum = 1;
         delete[] blocks;
         blocks = new Block[1];
-        blocks[0].size = task.fileSize;
+        blocks[0].size = task.get_file_size();
         blocks[0].bufferFile.open(localMg);
     }else if(file_exist(localMg)){
         ret = init_threads_from_mg();
@@ -682,9 +688,9 @@ Downloader::file_download(void)
     }
     pb->init();
 
-    pb->set_total_size(task.fileSize);
-    cerr << "file_download: task.fileSize" << task.fileSize;
-    emit set_GuiProgressBarMaximum(task.fileSize);
+    pb->set_total_size(task.get_file_size());
+    cerr << "file_download: task.fileSize" << task.get_file_size();
+    emit set_GuiProgressBarMaximum(task.get_file_size());
     pb->set_block_num(threadNum);
     pb->set_start_point(data);
 
@@ -714,7 +720,7 @@ Downloader::file_download(void)
 
     delete[] data;
     // recheck the size of the file if possible
-    if(task.fileSize >= 0){
+    if(task.get_file_size() >= 0){
         off_t downloaded;
         downloaded = 0;
         for(i = 0; i < threadNum; i ++){
@@ -722,7 +728,7 @@ Downloader::file_download(void)
         }
         // the downloaded maybe bigger than the filesize
         // because the overlay of the data
-        if(downloaded < task.fileSize){
+        if(downloaded < task.get_file_size()){
             cerr<<"!!!Some error happend when downloaded"<<endl;
             cerr<<"!!!Redownloading is recommended"<<endl;
             emit errorHappened("!!!Some error happend when downloaded. !!!Redownloading is recommended");
@@ -744,7 +750,7 @@ Downloader::file_download(void)
 
     time = get_current_time() - time;
     convert_time(buf, time);
-    emit set_GuiProgressBarValue(task.fileSize);
+    emit set_GuiProgressBarValue(task.get_file_size());
 
     cout<< endl << "Download successfully in "<<buf<<endl;
     errorMsg = QString("Download successfully in ");
@@ -759,7 +765,7 @@ Downloader::run(void)
 {
     int ret;
 
-    ret = init_task();
+    ret = init_task();  // Maybe we could put this init_task() function into the class Task?
     if(ret < 0){
         cerr<<"Can not get the info of the file "<<endl;
         emit errorHappened(QString("Can not get the info of the file "));
@@ -767,29 +773,29 @@ Downloader::run(void)
         return;
     }
 
-    if(task.isDirectory){
-        cerr<<"This is a directory: "<<task.url.get_url()<<endl;
+    if(task.get_isDirectory()){
+        cerr<<"This is a directory: "<<task.get_url()<<endl;
         directory_download();
         return;
     }
 
     file_download();
-    if (sigint_received == false) {     //Fix me, when download in a resumed session, and file_download() exit by error
-        cerr << "Will change file size";
-        int fd;
-        if( _sopen_s( &fd, localPath, _O_RDWR | _O_CREAT | _O_BINARY, _SH_DENYNO,
-                      _S_IREAD | _S_IWRITE ) == 0 )
-        {
-            int result;
-            printf( "File length before: %ld\n", _filelength( fd ) );
-            if( ( result = _chsize(fd, task.fileSize) ) == 0 )
-                printf( "Size successfully changed\n" );
-            else
-                printf( "Problem in changing the size\n" );
-            printf( "File length after:  %ld\n", _filelength(fd ) );
-            _close( fd);
-        }
-    }
+//    if (sigint_received == false) {     //Fix me, when download in a resumed session, and file_download() exit by error
+//        cerr << "Will change file size";
+//        int fd;
+//        if( _sopen_s( &fd, localPath, _O_RDWR | _O_CREAT | _O_BINARY, _SH_DENYNO,
+//                      _S_IREAD | _S_IWRITE ) == 0 )
+//        {
+//            int result;
+//            printf( "File length before: %ld\n", _filelength( fd ) );
+//            if( ( result = _chsize(fd, task.get_file_size()) ) == 0 )
+//                printf( "Size successfully changed\n" );
+//            else
+//                printf( "Problem in changing the size\n" );
+//            printf( "File length after:  %ld\n", _filelength(fd ) );
+//            _close( fd);
+//        }
+//    }
 
     return;
 }
@@ -798,11 +804,10 @@ void
 Downloader::runMyself(QString QUrl)
 {
     if (!QUrl.isEmpty()) {
-        url.set_url(QUrl.toUtf8().constData());
+        task.set_url(QUrl.toUtf8().constData());
     }else {
         cerr << "runMyself: QUrl is empty!" << endl;
     }
-    task.url = url;
     start();
 }
 
@@ -835,5 +840,5 @@ Downloader::quit(void)
 void
 Downloader::setThreadNum(int num)
 {
-    task.threadNum = num;
+    task.set_threadNum(num);
 }

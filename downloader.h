@@ -50,8 +50,6 @@ class Downloader: public QThread
 
 
 	public:
-		Task task;
-        URL url;
         static int download_thread(Downloader *downloader, QThread *ptr_thread);
         int self(QThread *);
 
@@ -76,7 +74,7 @@ class Downloader: public QThread
         void done();
 
 	private:
-		int init_plugin(void);
+        int init_plugin(void);
 		int init_task(void);
 		int init_local_file_name(void);
 		int init_threads_from_mg(void);
@@ -92,6 +90,7 @@ class Downloader: public QThread
         void catch_ctrl_c(int signo);
 
 	private:
+        Task task;
 		Plugin *plugin;
 		char *localPath;
 		char *localMg;

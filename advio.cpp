@@ -401,37 +401,29 @@ BufferFile::BufferFile()
 {
 	ptr = buf;
 	left = FILE_BUFFER_SIZE;
-	fd = -1;
-};
+}
 
 BufferFile::~BufferFile()
 {
 	flush();
-    ::closesocket(fd);
-};
+    diskFile.close();
+}
 
-int
-BufferFile::open(const char *file, int flag, int mode)
+bool BufferFile::open(const char *file)
 {
 	ptr = buf;
 	left = FILE_BUFFER_SIZE;
-    //return ( fd = ::open(file, flag, mode) );
-    if (_sopen_s(&fd,file, _O_RDWR | _O_CREAT | _O_BINARY, _SH_DENYNO, _S_IREAD | _S_IWRITE) == 0)
-    {
-        return fd;
-    }
-    else
-    {
-        return -1;
-    }
-};
+    diskFile.setFileName(file);
 
-int
+    return diskFile.open(QIODevice::ReadWrite);
+}
+
+void
 BufferFile::close()
 {
     flush();
-    return ::_close(fd);
-};
+    diskFile.close();
+}
 
 // flush the data to the hard-disk, and return the bytes
 // on success, return -1 on error
@@ -448,7 +440,7 @@ BufferFile::flush()
 	pptr = buf;
 	while(count > 0){
 _flush_again:
-        wc = ::_write(fd, pptr, count);
+        wc = diskFile.write(pptr, count);
 		if(wc < 0){
 			if(errno == EINTR) goto _flush_again;
 			perror("write back to file failed");
@@ -479,14 +471,14 @@ BufferFile::seek(off_t off_set)
     {
         return 0;
     }
-    return _lseek(fd, off_set, SEEK_SET);
-};
+    return diskFile.seek(off_set);
+}
 
 int
 BufferFile::truncate(off_t length)
 {
-    return _chsize(fd, (off_t)length);
-};
+    return diskFile.resize(length);
+}
 
 // get length bytes data from pio, and argument rtlength
 // is used to real-time reflect the change, if the length is set

@@ -37,59 +37,60 @@
 
 using namespace std;
 
+/* get file_size, set local_file_name, set timeout, setup debug log... */
 int
 HttpPlugin::get_info(Task *task)
 {
 	Http http;
 
-	http.set_timeout(task->timeout);
+    http.set_timeout(task->get_timeout());
 	http.set_log(&debug_log);
 #ifdef HAVE_SSL
-	if(task->url.get_protocol() == HTTPS){
+    if(task->get_protocol() == HTTPS){
 		http.set_use_ssl(true);
 	}
 #endif
 
-	if(task->url.get_user() != NULL){
-		http.auth(task->url.get_user(),
-				task->url.get_password() ? task->url.get_password() : "");
+    if(task->get_url_user() != NULL){
+        http.auth(task->get_url_user(),
+                task->get_url_password() ? task->get_url_password() : "");
 	}
 
 	if(task->get_referer() != NULL){
 		http.header("Referer", task->get_referer());
 	}else{
-		http.header("Referer", task->url.get_url());
+        http.header("Referer", task->get_url());
 	}
 
-	if(task->fileSize > 0){
+    if(task->get_file_size() > 0){
 		// test the Range
 		http.set_range(1);
 	}
 
-	if(task->proxy.get_type() == HTTP_PROXY){
-		if(task->proxy.get_host() == NULL){
+    if(task->get_proxy_type() == HTTP_PROXY){
+        if(task->get_proxy_host() == NULL){
 			return -1;
 		}
-		if(http.connect(task->proxy.get_host(), task->proxy.get_port()) < 0){
+        if(http.connect(task->get_proxy_host(), task->get_proxy_port()) < 0){
             cerr << "http proxy connect failed" << endl;
 			return -2;
 		}
-		http.set_host(task->url.get_host(), task->url.get_port());
-		if(task->proxy.get_user() != NULL){
-			http.proxy_auth(task->proxy.get_user(),
-					task->proxy.get_password() ? task->proxy.get_password() : "");
+        http.set_host(task->get_url_host(), task->get_url_port());
+        if(task->get_proxy_user() != NULL){
+            http.proxy_auth(task->get_proxy_user(),
+                    task->get_proxy_password() ? task->get_proxy_password() : "");
 		}
-		if(http.get(task->url.get_url()) < 0){
+        if(http.get(task->get_url()) < 0){
 			return -2;
 		}
 	}else{
         int rt = -33;
-        if( (rt= http.connect(task->url.get_host(), task->url.get_port())) < 0){
+        if( (rt= http.connect(task->get_url_host(), task->get_url_port())) < 0){
         //    cerr << "http direct connect failed, rt:" << rt << endl;
 			return -2;
 		}
 
-		if(http.get(task->url.get_encoded_path()) < 0){
+        if(http.get(task->get_encoded_path()) < 0){
             cerr << "http get failed" << endl;
 			return -2;
 		}
@@ -107,20 +108,20 @@ HttpPlugin::get_info(Task *task)
 		case 303: // HTTP_SEE_OTHER
 		case 307: // HTTP_STATUS_TEMPORARY_REDIRECT
 			{// redirect
-				task->fileSize = -1; // if not, the new location's filesize is wrong
+                task->set_file_size(-1); // if not, the new location's filesize is wrong
 				const char *location = http.get_header("Location");
 				if(location == NULL){
 					// I do not know when this will happen, but no harm
 					location = http.get_header("Content-Location");
 					if(location == NULL) return -1;
 				}
-				if(strcmp(location, task->url.get_url()) == 0) break;
-				if(task->url.reset_url(location) < 0) return -2;
+                if(strcmp(location, task->get_url()) == 0) break;
+                if(task->reset_url(location) < 0) return -2;
 				return S_REDIRECT;
 			}
 		case 305: // HTTP_USE_PROXY
 			{// get the content through the proxy
-				task->fileSize = -1; // if not, the new location's filesize is wrong
+                task->set_file_size(-1); // if not, the new location's filesize is wrong
 				return S_REDIRECT;
 			}
 		case 408: // HTTP_CLIENT_TIMEOUT
@@ -139,9 +140,9 @@ HttpPlugin::get_info(Task *task)
 	}
 
 	// if the page is an active page, we maybe can not get the filesize
-	if(task->fileSize < 0){
-		task->fileSize = http.get_file_size();
-		if(task->fileSize > 1){
+    if(task->get_file_size() < 0){
+        task->set_file_size( http.get_file_size());
+        if(task->get_file_size() > 1){
 			// we need test whether the Range header is supported or not
 			return -2;
 		}
@@ -153,8 +154,8 @@ HttpPlugin::get_info(Task *task)
 			while(*ptr != '\0' && !ISDIGIT(*ptr)) ptr ++;
 			if(*ptr++ == '1' && *ptr == '-'){
 				// get the filesize again for ensure the size
-				task->fileSize = 1 + http.get_file_size();
-				task->resumeSupported = true;
+                task->set_file_size(1 + http.get_file_size());
+                task->set_resumeSupported(true);
 			}
 		}
 	}
@@ -172,7 +173,7 @@ HttpPlugin::get_info(Task *task)
 	}
 
 
-	if(task->get_local_file() == NULL &&  task->url.get_file() == NULL ){
+    if(task->get_local_file() == NULL &&  task->get_file() == NULL ){
 		task->set_local_file("index.html");
 	}
 
@@ -183,7 +184,7 @@ int
 HttpPlugin::download(Task& task, Block *block)
 {
 	block->state = STOP;
-	if(task.resumeSupported){
+    if(task.get_resumeSupported()){
 		if(block->downloaded >= block->size){
 			block->state = EXIT;
 			return 0;
@@ -196,47 +197,47 @@ HttpPlugin::download(Task& task, Block *block)
 	}
 
 	Http http;
-	http.set_timeout(task.timeout);
+    http.set_timeout(task.get_timeout());
 	http.set_log(&debug_log);
 #ifdef HAVE_SSL
-	if(task.url.get_protocol() == HTTPS){
+    if(task.get_protocol() == HTTPS){
 		http.set_use_ssl(true);
 	}
 #endif
 
-	if(task.resumeSupported){
+    if(task.get_resumeSupported()){
 		// the end is not set for the schedule purpose
 		http.set_range(block->startPoint + block->downloaded);
 	}
 
-	if(task.url.get_user() != NULL){
-		http.auth(task.url.get_user(),
-				task.url.get_password() ? task.url.get_password() : "");
+    if(task.get_url_user() != NULL){
+        http.auth(task.get_url_user(),
+                task.get_url_password() ? task.get_url_password() : "");
 	}
 
 	if(task.get_referer() != NULL){
 		http.header("Referer", task.get_referer());
 	}else{
-		http.header("Referer", task.url.get_url());
+        http.header("Referer", task.get_url());
 	}
 
-	if(task.proxy.get_type() == HTTP_PROXY){
-		if(http.connect(task.proxy.get_host(), task.proxy.get_port()) < 0){
+    if(task.get_proxy_type() == HTTP_PROXY){
+        if(http.connect(task.get_proxy_host(), task.get_proxy_port()) < 0){
 			return -2;
 		}
-		http.set_host(task.url.get_host(), task.url.get_port());
-		if(task.proxy.get_user() != NULL){
-			http.proxy_auth(task.proxy.get_user(),
-					task.proxy.get_password() ? task.proxy.get_password() : "");
+        http.set_host(task.get_url_host(), task.get_url_port());
+        if(task.get_proxy_user() != NULL){
+            http.proxy_auth(task.get_proxy_user(),
+                    task.get_proxy_password() ? task.get_proxy_password() : "");
 		}
-		if(http.get(task.url.get_url()) < 0){
+        if(http.get(task.get_url()) < 0){
 			return -2;
 		}
 	}else{
-		if(http.connect(task.url.get_host(), task.url.get_port()) < 0){
+        if(http.connect(task.get_url_host(), task.get_url_port()) < 0){
 			return -2;
 		}
-		if(http.get(task.url.get_encoded_path()) < 0){
+        if(http.get(task.get_encoded_path()) < 0){
 			return -2;
 		}
 	}
@@ -254,7 +255,7 @@ _re_retr:
 		return -2;
 	}
 
-	if(task.resumeSupported && block->downloaded < block->size){
+    if(task.get_resumeSupported() && block->downloaded < block->size){
 		block->state = STOP;
 		return -2;
 	}

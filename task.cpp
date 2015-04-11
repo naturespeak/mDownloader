@@ -45,32 +45,15 @@ Task::~Task()
 	delete[] localFile;
 	delete[] referer;
 }
-
-Task&
-Task::operator = (Task& task)
-{
-	if(this == &task) return *this;
-
-	delete[] localDir;
-	delete[] localFile;
-	delete[] referer;
-	localDir = StrDup(task.get_local_dir());
-	localFile = StrDup(task.get_local_file());
-	referer = StrDup(task.get_referer());
-	fileSize = task.fileSize;
-	isDirectory = task.isDirectory;
-	resumeSupported = task.resumeSupported;
-	tryCount = task.tryCount;
-	retryInterval = task.retryInterval;
-	timeout = task.timeout;
-	ftpActive = task.ftpActive;
-	threadNum = task.threadNum;
-	url = task.url;
-	proxy = task.proxy;
-
-	return *this;
-}
 	
+const off_t Task::get_file_size()
+{
+    return fileSize;
+}
+void Task::set_file_size(off_t size)
+{
+    fileSize = size;
+}
 
 const char*
 Task::get_local_dir(void)
@@ -78,10 +61,25 @@ Task::get_local_dir(void)
 	return localDir;
 }
 
+void
+Task::set_local_dir(const char *dir)
+{
+    delete[] localDir;
+    localDir = StrDup(dir);
+}
+
+
 const char*
 Task::get_local_file(void)
 {
 	return localFile;
+}
+
+void
+Task::set_local_file(const char *file)
+{
+    delete[] localFile;
+    localFile = StrDup(file);
 }
 
 const char*
@@ -90,23 +88,98 @@ Task::get_referer(void)
 	return referer;
 }
 
-void
-Task::set_local_dir(const char *dir)
+const long
+Task::get_retryInterval()
 {
-	delete[] localDir;
-	localDir = StrDup(dir);
+    return retryInterval;
+}
+
+const long
+Task::get_timeout()
+{
+    return timeout;
+}
+
+const int
+Task::get_ftpActive()
+{
+    return ftpActive;
 }
 
 void
-Task::set_local_file(const char *file)
+Task::set_ftpActive(int active)
 {
-	delete[] localFile;
-	localFile = StrDup(file);
+    ftpActive = active;
+}
+
+const int
+Task::get_threadNum()
+{
+    return threadNum;
 }
 
 void
-Task::set_referer(const char *referer)
+Task::set_threadNum(int Num)
 {
-	delete[] this->referer;
-	this->referer = StrDup(referer);
+    threadNum = Num;
 }
+
+const int Task::get_tryCount()
+{
+    return tryCount;
+}
+
+//void Task::set_tryCount(int count)
+//{
+//    tryCount = count;
+//}
+
+const bool
+Task::get_isDirectory()
+{
+    return isDirectory;
+}
+
+void
+Task::set_isDirectory(bool value)
+{
+    isDirectory = value;
+}
+
+const bool
+Task::get_resumeSupported()
+{
+    return resumeSupported;
+}
+
+void
+Task::set_resumeSupported(bool value)
+{
+    resumeSupported = value;
+}
+
+Task&
+Task::operator = (Task& task)
+{
+    if(this == &task) return *this;
+
+    delete[] localDir;
+    delete[] localFile;
+    delete[] referer;
+    localDir = StrDup(task.get_local_dir());
+    localFile = StrDup(task.get_local_file());
+    referer = StrDup(task.get_referer());
+    fileSize = task.fileSize;
+    isDirectory = task.isDirectory;
+    resumeSupported = task.resumeSupported;
+    tryCount = task.tryCount;
+    retryInterval = task.retryInterval;
+    timeout = task.timeout;
+    ftpActive = task.ftpActive;
+    threadNum = task.threadNum;
+    url = task.url;
+    proxy = task.proxy;
+
+    return *this;
+}
+

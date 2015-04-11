@@ -41,16 +41,19 @@ class Proxy
 		~Proxy();
 
 		ProxyType get_type(void);
-		const char* get_host(void);
-		int get_port(void);
-		const char* get_user(void);
-		const char* get_password(void);
+        void set_type(ProxyType type);
 
-		void set_host(const char *host);
-		void set_user(const char *user);
-		void set_port(int port);
+        const char* get_host(void);
+        void set_host(const char *host);
+
+        int get_port(void);
+        void set_port(int port);
+
+        const char* get_user(void);
+        void set_user(const char *user);
+
+        const char* get_password(void);
 		void set_password(const char *password);
-		void set_type(ProxyType type);
 
 		Proxy& operator = (Proxy &proxy);
 
