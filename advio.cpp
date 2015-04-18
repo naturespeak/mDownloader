@@ -405,7 +405,7 @@ BufferFile::BufferFile()
 
 BufferFile::~BufferFile()
 {
-	flush();
+    flush();
     diskFile.close();
 }
 
@@ -448,6 +448,7 @@ _flush_again:
 		}
 		pptr += wc;
 		count -= wc;
+
 	}
 
 	ptr = buf;
@@ -466,7 +467,7 @@ BufferFile::seek(off_t off_set)
 {
 	// before seek we must flush the buffer,
 	// if not we will write the data to the wrong postion
-	flush();
+    flush();
     if (off_set == 0)
     {
         return 0;
@@ -499,10 +500,10 @@ BufferFile::retr_data_from(PluginIO *pio, off_t *rtlength, off_t length)
 		}
 		left -= ret;
 		ptr += ret;
-		*rtlength += ret;
+        *rtlength += ret;
 		data_count += ret;
 		if(left <= MIN_BUFFER_LEFT){
-			flush();
+            flush();
 		}
 		if(length >= 0 && data_count >= length) break;
 	}

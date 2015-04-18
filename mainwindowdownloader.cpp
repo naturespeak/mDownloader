@@ -115,6 +115,8 @@ void MainWindowDownloader::on_error_happens(QString errorMsg)
     // When the downloading succeeds m_has_error_happend should keep to be false.
     if (!errorMsg.contains("Download successfully in")) {
         m_has_error_happend = true;
+    } else {
+        m_has_error_happend = false;
     }
 }
 
@@ -145,8 +147,10 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
 {
     if (m_is_downloading_started == false && m_is_downloading_finished == true && m_is_downloading_paused == true) {        // Not downloading
         event->accept();
+        WSACleanup();
     }else if (m_is_downloading_started == true && m_is_downloading_finished == true && m_is_downloading_paused == true) {   // Paused
         event->accept();
+        WSACleanup();
     }else if (m_is_downloading_started == true && m_is_downloading_finished == false && m_is_downloading_paused == false) { // Downloading
         msgBox.setText("Downloading is in progress. Please press Pause first.");
         msgBox.exec();
@@ -156,7 +160,6 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
         msgBox.exec();
         event->ignore();
     }
-    WSACleanup();
 }
 
 void MainWindowDownloader::on_downloading_finished(void)
@@ -184,7 +187,7 @@ void MainWindowDownloader::on_pushButtonAbout_clicked()
     QString about;
     about = "mDownloader: A GUI download accelerator.";
     about += QChar::LineSeparator;
-    about += "Version: 1.0.1Build004.";
+    about += "Version: 1.0.1Build005.";
     about += QChar::LineSeparator;
     about += "Written by Chuan Qin. Email: qc2105@qq.com";
     about += QChar::LineSeparator;

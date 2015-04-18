@@ -35,6 +35,7 @@
 #include "header.h"
 
 #include <QDir>
+#include <QByteArray>
 
 #if WIN32
 #define snprintf sprintf_s
@@ -171,59 +172,82 @@ Downloader::init_local_file_name(void)
 int
 Downloader::init_threads_from_mg(void)
 {
-    FILE *fd;
+    QFile *tempFile = NULL;
+    QByteArray readData;
     int i;
-    struct stat file_stat;
+    int blockSize = 0;
     QString error;
 
-    if(stat(localMg, &file_stat) < 0){
-        perror("Can not get the info of the temp file");
-        emit errorHappened(QString("Can not get the info of the temp file"));
-        return -1;
-    }
-    if(file_stat.st_size < task.get_file_size() + sizeof(threadNum)){
-        cerr<<"the temp file: \""<<localMg<<"\" is not correct"<<endl;
-        error = QString("The temp file: ");
-        error += QString(localMg);
-        error += QString(" is not correct.");
-        emit errorHappened(error);
-        return -1;
-    }
-    fd = fopen(localMg, "r");
-    if(fd == NULL && errno == EACCES){
+    readData.clear();
+
+    readData.setNum(task.get_file_size());
+    blockSize = readData.size();
+
+    readData.clear();
+
+    tempFile = new QFile(localMg);
+
+    if (!tempFile->open(QIODevice::ReadOnly)) {
         cerr<<"Can not access the temp file: "<<localMg<<endl;
         error = QString("Can not access the temp file: ");
         error += QString(localMg);
         emit errorHappened(error);
+        delete tempFile;
         return -1;
     }
 
-    fseek(fd, task.get_file_size(), SEEK_CUR);
-    fread(&threadNum, sizeof(threadNum), 1, fd);
-    if(file_stat.st_size != task.get_file_size() + sizeof(threadNum) + sizeof(off_t)*threadNum*3){
-        cerr<<"the temp file: \""<<localMg<<"\" is not correct"<<endl;
+    cerr << "File size immediately after open: " << tempFile->size() << endl;
+
+    tempFile->seek(task.get_file_size());
+    readData = tempFile->read(blockSize);
+    threadNum = readData.toInt();
+    readData.clear();
+
+    cerr << "File size: " << tempFile->size()<< endl;
+    cerr << "threadNum: " << threadNum << endl;
+
+    // TODO: We'd better use a hash function to check.
+    if(tempFile->size() < task.get_file_size() + 3 * blockSize * threadNum) {
+        cerr<<"the temp file: \""<<localMg<<"\" is not correct, type I."<<endl;
         error = QString("The temp file: ");
         error += QString(localMg);
-        error += QString(" is not correct.");
-        fclose(fd);
+        error += QString(" is not correct, type I.");
+        tempFile->close();
+        delete tempFile;
         emit errorHappened(error);
         return -1;
     }
 
+
     delete[] blocks;
     blocks = new Block[threadNum];
     for(i = 0; i < threadNum; i ++){
-        fread(&blocks[i].startPoint, sizeof(off_t), 1, fd);
-        fread(&blocks[i].downloaded, sizeof(off_t), 1, fd);
-        fread(&blocks[i].size, sizeof(off_t), 1, fd);
+        tempFile->seek(task.get_file_size() + (threadNum*i+1) * blockSize);
+        readData = tempFile->read(blockSize);
+        blocks[i].startPoint = readData.toLong();
+        readData.clear();
+        cerr << "startPoint for thread " << i << ": " << blocks[i].startPoint << endl;
+        tempFile->seek(task.get_file_size() + (threadNum*i+2) * blockSize);
+        readData = tempFile->read(blockSize);
+        blocks[i].downloaded = readData.toLong();
+        readData.clear();
+        cerr << "downloaded for thread " << i << ": " << blocks[i].downloaded << endl;
+        tempFile->seek(task.get_file_size() + (threadNum*i+3) * blockSize);
+        readData = tempFile->read(blockSize);
+        blocks[i].size = readData.toLong();
+        readData.clear();
+        cerr << "size for thread " << i << ": " << blocks[i].size << endl;
         if(blocks[i].bufferFile.open(localMg) < 0){
+            tempFile->close();
+            delete tempFile;
             perror("Can not open the temp file to write");
             emit errorHappened(QString("Can not open the temp file to write"));
             return -1;
         }
     }
 
-    fclose(fd);
+    tempFile->close();
+    delete tempFile;
     return 0;
 }
 
@@ -384,7 +408,18 @@ int
 Downloader::save_temp_file_exit(void)
 {
     int i;
-    FILE *fd;
+    QFile *tempFile;
+    QByteArray writeData;
+    int blockSize = 0;
+    QString error;
+
+    writeData.clear();
+
+    writeData.setNum(task.get_file_size());
+
+    blockSize = writeData.size();
+
+    writeData.clear();
 
     for(i = 0; i < threadNum; i ++){
         if(blocks[i].state != JOINED){
@@ -392,6 +427,7 @@ Downloader::save_temp_file_exit(void)
             blocks[i].ptr_thread->terminate();
             blocks[i].ptr_thread->wait();
             blocks[i].bufferFile.close();
+            blocks[i].state = STOP;
         }
     };
 
@@ -401,15 +437,39 @@ Downloader::save_temp_file_exit(void)
         exit(-1); // Is this right?
     }
 
-    fd = fopen(localMg, "r+");
-    fseek(fd, task.get_file_size(), SEEK_CUR);
-    fwrite(&threadNum, sizeof(threadNum), 1, fd);
-    for(i = 0; i < threadNum; i ++){
-        fwrite(&blocks[i].startPoint, sizeof(off_t), 1, fd);
-        fwrite(&blocks[i].downloaded, sizeof(off_t), 1, fd);
-        fwrite(&blocks[i].size, sizeof(off_t), 1, fd);
+    tempFile = new QFile(localMg);
+    if (!tempFile->open(QIODevice::ReadWrite)) {
+        cerr<<"Can not create the temp file: "<<localMg<<endl;
+        error = QString("Can not create the temp file: ");
+        error += QString(localMg);
+        emit errorHappened(error);
+        delete tempFile;
+        return -1;
     }
-    fclose(fd);
+
+    tempFile->seek(task.get_file_size());
+    writeData.setNum(threadNum);
+    tempFile->write(writeData);
+    writeData.clear();
+    for(i = 0; i < threadNum; i++){
+        tempFile->seek(task.get_file_size() + (threadNum*i+1) * blockSize);
+        writeData.setNum(blocks[i].startPoint);
+        tempFile->write(writeData);
+        writeData.clear();
+        cerr << "Write startPoint for thread " << i << ": " << blocks[i].startPoint << endl;
+        tempFile->seek(task.get_file_size() + (threadNum*i+2) * blockSize);
+        writeData.setNum(blocks[i].downloaded);
+        tempFile->write(writeData);
+        writeData.clear();
+        cerr << "Write downloaded for thread " << i << ": " << blocks[i].downloaded << endl;
+        tempFile->seek(task.get_file_size() + (threadNum*i+3) * blockSize);
+        writeData.setNum(blocks[i].size);
+        tempFile->write(writeData);
+        writeData.clear();
+        cerr << "Write size for thread " << i << ": " << blocks[i].size << endl;
+    }
+    tempFile->close();
+    delete tempFile;
 
     is_downloading = false;
     QString inforMsg = "Downloading paused.";
@@ -713,6 +773,7 @@ Downloader::file_download(void)
         emit set_GuiLabelRemainingTime(QString(pb->get_eta()));
 
         if(schedule() == 0){
+            cerr << "all the thread are exit!" << endl;
             break; // all the thread are exit
         }
         usleep(250000);
@@ -738,13 +799,20 @@ Downloader::file_download(void)
     }
 
     if(rename(localMg, localPath) < 0){
-        perror("Rename failed");
+        cerr << "Rename failed" << endl;
         emit errorHappened(QString("Rename failed"));
         return -1;
     }
     else
     {
-        perror("Rename succeed.");
+        cerr << "Rename succeed." << endl;
+        QFile downloadedFile(localPath);
+
+        if (!sigint_received && !downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
+        {
+            cerr<<"Resize the downloaed file failed"<<endl;
+            emit errorHappened(QString("Resize the downloaed file failed"));
+        }
     }
     is_downloading = false;
 
@@ -769,7 +837,7 @@ Downloader::run(void)
     if(ret < 0){
         cerr<<"Can not get the info of the file "<<endl;
         emit errorHappened(QString("Can not get the info of the file "));
-        //return ret;
+
         return;
     }
 
@@ -780,22 +848,6 @@ Downloader::run(void)
     }
 
     file_download();
-//    if (sigint_received == false) {     //Fix me, when download in a resumed session, and file_download() exit by error
-//        cerr << "Will change file size";
-//        int fd;
-//        if( _sopen_s( &fd, localPath, _O_RDWR | _O_CREAT | _O_BINARY, _SH_DENYNO,
-//                      _S_IREAD | _S_IWRITE ) == 0 )
-//        {
-//            int result;
-//            printf( "File length before: %ld\n", _filelength( fd ) );
-//            if( ( result = _chsize(fd, task.get_file_size()) ) == 0 )
-//                printf( "Size successfully changed\n" );
-//            else
-//                printf( "Problem in changing the size\n" );
-//            printf( "File length after:  %ld\n", _filelength(fd ) );
-//            _close( fd);
-//        }
-//    }
 
     return;
 }
