@@ -116,6 +116,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonNewTorrent">
+       <property name="text">
+        <string>Torrent</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QDialogButtonBox" name="buttonBoxWhetherOk">
        <property name="maximumSize">
         <size>

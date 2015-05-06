@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(newTaskShow()), &newTask, SLOT(showMyself()));
     QObject::connect(&newTask, SIGNAL(setFileName(QString)), &w, SLOT(setDownloadedFileName(QString)));
     QObject::connect(&newTask, SIGNAL(setDownloadedDirectory(QString)), &w, SLOT(setDownloadedDirectory(QString)));
+    QObject::connect(&newTask, SIGNAL(addTorrent(QString,QString)), &w, SLOT(addTorrentSlot(QString,QString)));
 
     ErrorMessageBox errMsgBox;
     Downloader downloader;

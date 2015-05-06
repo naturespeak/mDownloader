@@ -25,10 +25,14 @@
 #include <stdio.h>
 #include <QFileDialog>
 #include <QDir>
+#include <QSettings>
 #include <QUuid>
+#include <QTimer>
+
 
 #include "newtask.h"
 #include "ui_newtask.h"
+#include "addtorrentdialog.h"
 
 
 NewTask::NewTask(QWidget *parent) :
@@ -80,6 +84,36 @@ void NewTask::on_pushButtonSetSaveLocation_clicked()
     ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_dir + "\\" + ui->lineEditFileName->text()));
 }
 
+void NewTask::on_pushButtonNewTorrent_clicked()
+{
+    // Show the file dialog, let the user select what torrent to start downloading.
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose a torrent file"),
+                                                    lastDirectory,
+                                                    tr("Torrents (*.torrent);;"
+                                                       " All files (*.*)"));
+    if (fileName.isEmpty())
+        return;
+    lastDirectory = QFileInfo(fileName).absolutePath();
 
+    // Show the "Add Torrent" dialog.
+    AddTorrentDialog *addTorrentDialog = new AddTorrentDialog(this);
+    QObject::connect(addTorrentDialog, SIGNAL(accepted()), this, SLOT(hide()));
+    addTorrentDialog->setTorrent(fileName);
+    addTorrentDialog->deleteLater();
+    if (!addTorrentDialog->exec())
+        return;
+
+    // Add the torrent to our list of downloads
+    emit addTorrent(fileName, addTorrentDialog->destinationFolder());
+    if (!saveChanges) {
+        saveChanges = true;
+        QTimer::singleShot(1000, this, SLOT(saveSettingsSlot()));
+    }
+}
+
+void NewTask::saveSettingsSlot()
+{
+    emit saveSettings();
+}
 
 

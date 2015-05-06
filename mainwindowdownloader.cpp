@@ -28,6 +28,12 @@
 #include <QDir>
 #include <QCloseEvent>
 #include <QDesktopServices>
+#include <QMessageBox>
+#include <QTimer>
+#include <QSettings>
+
+#include "ratecontroller.h"
+#include "torrentclient.h"
 
 #include <WINSOCK2.H>
 #pragma comment(lib, "ws2_32.lib")
@@ -44,7 +50,8 @@ catch_ctrl_c(int signo);
 
 MainWindowDownloader::MainWindowDownloader(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindowDownloader)
+    ui(new Ui::MainWindowDownloader),
+    quitDialog(0), saveChanges(false)
 {
     ui->setupUi(this);
     m_downloadedDirectory = QDir::homePath();
@@ -118,6 +125,14 @@ void MainWindowDownloader::on_error_happens(QString errorMsg)
     } else {
         m_has_error_happend = false;
     }
+}
+
+void MainWindowDownloader::addTorrentSlot(const QString &fileName, const QString &destinationFolder)
+{
+    setUploadLimit(1024);
+    setDownloadLimit(4096);
+    ui->labelSpeed->setText("Down speed: ");
+    addTorrent(fileName, destinationFolder);
 }
 
 void MainWindowDownloader::on_pushButtonOpenDir_clicked()
@@ -194,4 +209,204 @@ void MainWindowDownloader::on_pushButtonAbout_clicked()
     about += "It is based on Qt and Mytget, and licensed under GPL.";
     msgBox.setText(about);
     msgBox.exec();
+}
+
+int MainWindowDownloader::rowOfClient(TorrentClient *client) const
+{
+    // Return the row that displays this client's status, or -1 if the
+    // client is not known.
+    int row = 0;
+    foreach (Job job, jobs) {
+        if (job.client == client)
+            return row;
+        ++row;
+    }
+    return -1;
+}
+
+void MainWindowDownloader::setUploadLimit(int value)
+{
+//    int rate = rateFromValue(value);
+//    uploadLimitLabel->setText(tr("%1 KB/s").arg(QString().sprintf("%4d", rate)));
+      RateController::instance()->setUploadLimit(value * 1024);
+}
+
+void MainWindowDownloader::setDownloadLimit(int value)
+{
+//    int rate = rateFromValue(value);
+//    downloadLimitLabel->setText(tr("%1 KB/s").arg(QString().sprintf("%4d", rate)));
+      RateController::instance()->setDownloadLimit(value * 1024);
+}
+
+bool MainWindowDownloader::addTorrent(const QString &fileName, const QString &destinationFolder,
+                         const QByteArray &resumeState)
+{
+    // Check if the torrent is already being downloaded.
+    foreach (Job job, jobs) {
+        if (job.torrentFileName == fileName && job.destinationDirectory == destinationFolder) {
+            QMessageBox::warning(this, tr("Already downloading"),
+                                 tr("The torrent file %1 is "
+                                    "already being downloaded.").arg(fileName));
+            return false;
+        }
+    }
+
+    // Create a new torrent client and attempt to parse the torrent data.
+    TorrentClient *client = new TorrentClient(this);
+    if (!client->setTorrent(fileName)) {
+        QMessageBox::warning(this, tr("Error"),
+                             tr("The torrent file %1 cannot not be opened/resumed.").arg(fileName));
+        delete client;
+        return false;
+    }
+    client->setDestinationFolder(destinationFolder);
+    client->setDumpedState(resumeState);
+
+    // Setup the client connections.
+    connect(client, SIGNAL(stateChanged(TorrentClient::State)), this, SLOT(updateState(TorrentClient::State)));
+    connect(client, SIGNAL(peerInfoUpdated()), this, SLOT(updatePeerInfo()));
+    connect(client, SIGNAL(progressUpdated(int)), this, SLOT(updateProgress(int)));
+    connect(client, SIGNAL(downloadRateUpdated(int)), this, SLOT(updateDownloadRate(int)));
+    connect(client, SIGNAL(uploadRateUpdated(int)), this, SLOT(updateUploadRate(int)));
+    connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
+    connect(client, SIGNAL(error(TorrentClient::Error)), this, SLOT(torrentError(TorrentClient::Error)));
+
+    // Add the client to the list of downloading jobs.
+    Job job;
+    job.client = client;
+    job.torrentFileName = fileName;
+    job.destinationDirectory = destinationFolder;
+    jobs << job;
+
+
+    QString baseFileName = QFileInfo(fileName).fileName();
+    if (baseFileName.toLower().endsWith(".torrent"))
+        baseFileName.remove(baseFileName.size() - 8, 8);
+
+    setDownloadedFileName(baseFileName);
+    setDownloadedDirectory(destinationFolder);
+    set_ProgressBarMaximum(100);
+    set_ProgressBarMinimum(0);
+
+    if (!saveChanges) {
+        saveChanges = true;
+        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+    }
+    client->start();
+    return true;
+}
+
+void MainWindowDownloader::updateState(TorrentClient::State)
+{
+    // Update the state string whenever the client's state changes.
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    int row = rowOfClient(client);
+    ui->labelTorrentStatusValue->setText(client->stateString());
+}
+
+void MainWindowDownloader::updatePeerInfo()
+{
+    // Update the number of connected, visited, seed and leecher peers.
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    int row = rowOfClient(client);
+
+    ui->labelPeersSeedsValue->setText(tr("%1/%2").arg(client->connectedPeerCount())
+                                      .arg(client->seedCount()));
+}
+
+void MainWindowDownloader::updateProgress(int percent)
+{
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    int row = rowOfClient(client);
+
+    set_ProgressBarValue(percent);
+}
+
+void MainWindowDownloader::updateDownloadRate(int bytesPerSecond)
+{
+    // Update the download rate.
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    int row = rowOfClient(client);
+    QString num;
+    num.sprintf("%.1f KB/s", bytesPerSecond / 1024.0);
+    set_labelDownloadSpeed(num);
+
+    if (!saveChanges) {
+        saveChanges = true;
+        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+    }
+}
+
+void MainWindowDownloader::updateUploadRate(int bytesPerSecond)
+{
+    // Update the upload rate.
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    int row = rowOfClient(client);
+    QString num;
+    num.sprintf("%.1f KB/s", bytesPerSecond / 1024.0);
+    ui->labelUploadingSpeedValue->setText(num);
+
+    if (!saveChanges) {
+        saveChanges = true;
+        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+    }
+}
+
+void MainWindowDownloader::torrentStopped()
+{
+    // Schedule the client for deletion.
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    client->deleteLater();
+
+    // If the quit dialog is shown, update its progress.
+    if (quitDialog) {
+        if (++jobsStopped == jobsToStop)
+            quitDialog->close();
+    }
+}
+
+void MainWindowDownloader::torrentError(TorrentClient::Error)
+{
+    // Delete the client.
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    int row = rowOfClient(client);
+    QString fileName = jobs.at(row).torrentFileName;
+    jobs.removeAt(row);
+
+    // Display the warning.
+    QMessageBox::warning(this, tr("Error"),
+                         tr("An error occurred while downloading %0: %1")
+                         .arg(fileName)
+                         .arg(client->errorString()));
+
+//    delete torrentView->takeTopLevelItem(row);
+    client->deleteLater();
+}
+
+void MainWindowDownloader::saveSettings()
+{
+    if (!saveChanges)
+      return;
+    saveChanges = false;
+
+    // Prepare and reset the settings
+    QSettings settings("Chuan Qin", jobs.at(0).torrentFileName);
+    settings.clear();
+
+//    settings.setValue("LastDirectory", lastDirectory);
+//    settings.setValue("UploadLimit", uploadLimitSlider->value());
+//    settings.setValue("DownloadLimit", downloadLimitSlider->value());
+
+    // Store data on all known torrents
+    settings.beginWriteArray("Torrents");
+    for (int i = 0; i < jobs.size(); ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue("sourceFileName", jobs.at(i).torrentFileName);
+        settings.setValue("destinationFolder", jobs.at(i).destinationDirectory);
+        settings.setValue("uploadedBytes", jobs.at(i).client->uploadedBytes());
+        settings.setValue("downloadedBytes", jobs.at(i).client->downloadedBytes());
+        settings.setValue("resumeState", jobs.at(i).client->dumpedState());
+    }
+    settings.endArray();
+    settings.sync();
 }
