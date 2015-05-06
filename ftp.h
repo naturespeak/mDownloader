@@ -63,13 +63,13 @@ class Ftp
 		// print current dir, the returned value must be freed
 		int pwd(char** dir);
 		// get the size of file
-		int size(const char *file, off_t *size);
+		int size(const char *file, qint64 *size);
 		// set offset from the begin, useful when n threads download
-		int rest(off_t offset);
+		int rest(qint64 offset);
 		// get the dir list, if dir is NULL, list the current dir
 		int list(const char *dir=NULL);
 		// get the file: the file must be in the current dir
-		int retr(const char *file, off_t offset = -1);
+		int retr(const char *file, qint64 offset = -1);
 		// set the data-type:A(ASCII) or I(binary)
 		int type(const char *type);
 		// get the data from dataConn
@@ -89,7 +89,7 @@ class Ftp
 		void operator = (Ftp);
 
 		int ftp_cmd(const char *cmd=NULL, const char *args=NULL);
-		int ftp_data_cmd(const char *cmd, const char *args, off_t offset = -1);
+		int ftp_data_cmd(const char *cmd, const char *args, qint64 offset = -1);
 		void (*log)(const char *, ...);
         static void default_log(const char *, ...){};
 

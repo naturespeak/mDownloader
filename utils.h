@@ -25,6 +25,7 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
+#include <QtGlobal>
 #include <sys/types.h>
 
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
@@ -52,7 +53,7 @@ int determine_screen_width(void);
 // get the current time in secondes
 double get_current_time(void);
 // conver size to 333M, 111K, 1G
-void convert_size(char *sizeStr, off_t size);
+void convert_size(char *sizeStr, qint64 size);
 // convert time to 11d23 11h12 12:34
 void convert_time(char *timeStr, double time);
 

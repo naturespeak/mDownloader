@@ -70,7 +70,7 @@ FtpParser::get_link(void)
 	return link;
 };
 
-off_t
+qint64
 FtpParser::get_size(void)
 {
 	return size;

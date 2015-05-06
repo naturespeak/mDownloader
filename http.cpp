@@ -200,7 +200,7 @@ Http::proxy_auth(const char *user, const char *password)
 };
 
 int
-Http::set_range(off_t start, off_t end)
+Http::set_range(qint64 start, qint64 end)
 {
 
 	if(end < 0){
@@ -391,8 +391,7 @@ Http::get_header(const char *attr_name)
 	return response.get_attr(attr_name);
 };
 
-off_t
-Http::get_file_size()
+qint64 Http::get_file_size()
 {
 	return fileSize;
 };

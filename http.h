@@ -65,7 +65,7 @@ class Http
 		// set proxy authorization info
 		int proxy_auth(const char *user, const char *password);
 		// set range
-		int set_range(off_t start, off_t end = -1);
+        int set_range(qint64 start, qint64 end = -1);
 		// set host
 		int set_host(const char *host, int port);
 
@@ -85,7 +85,7 @@ class Http
 		// get the status code returned from the server
 		int get_status_code();
 		// get filesize
-		off_t get_file_size();
+        qint64 get_file_size();
 		// accept range or not
 		bool accept_ranges();
 		// read maxsize data from the data section
@@ -105,8 +105,8 @@ class Http
 		int statusCode;
 		long timeout;
 		char buf[1024];
-		off_t fileSize;
-		off_t chunkedSize;
+        qint64 fileSize;
+        qint64 chunkedSize;
 		bool isChunked;
 #ifdef HAVE_SSL
 		bool useSSL;

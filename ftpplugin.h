@@ -38,7 +38,7 @@ class FtpPlugin
 		int get_dir_list(Task &task, const char *tempfile);
 		int relogin(Ftp *ftp, Task &task);
 		int recursive_get_dir_list(Task &task, Ftp *ftp, const char *tempfile,
-				const char *absdir, FILE *rfd, FILE *wfd, off_t *woff);
+				const char *absdir, FILE *rfd, FILE *wfd, qint64 *woff);
 };
 
 #endif // _FTPPLUGIN_H

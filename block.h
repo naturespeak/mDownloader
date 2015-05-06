@@ -46,9 +46,9 @@ class Block
         QThread *ptr_thread;
 		ThreadState state;
 		BufferFile bufferFile;
-		off_t startPoint;
-		off_t downloaded;
-		off_t size;
+		qint64 startPoint;
+		qint64 downloaded;
+		qint64 size;
 };
 
 #endif // _BLOCK_H

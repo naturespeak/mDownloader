@@ -254,7 +254,7 @@ Downloader::init_threads_from_mg(void)
 int
 Downloader::init_threads_from_info(void)
 {
-    off_t block_size;
+    qint64 block_size;
     int i;
 
     threadNum = task.get_threadNum()> 0 ? task.get_threadNum() : 1;
@@ -381,7 +381,7 @@ Downloader::schedule(void)
                 blocks[j].size = 0;
                 i = j;
                 joined += j - i;
-                off_t *data = new off_t[threadNum];
+                qint64 *data = new qint64[threadNum];
                 for(j = 0; j < threadNum; j ++){
                     data[j] = blocks[j].startPoint;
                 }
@@ -632,8 +632,8 @@ Downloader::directory_download(void)
     fd = fopen(tempfile, "r");
     task.set_isDirectory(false);
     while(1){
-        off_t size = 0;
-        if(fread(&size, sizeof(off_t), 1, fd) != 1) {
+        qint64 size = 0;
+        if(fread(&size, sizeof(qint64), 1, fd) != 1) {
             break;
         } else {
             task.set_file_size(size);
@@ -694,7 +694,7 @@ Downloader::file_download(void)
     }
     cout<<"Begin to download: "
        <<(task.get_local_file() ? task.get_local_file() : task.get_file())<<endl;
-    char buf[6];
+    char buf[20];
     double time = get_current_time();
     convert_size(buf, task.get_file_size());
     cout<<"Filesize: "<<buf<<endl;
@@ -740,8 +740,8 @@ Downloader::file_download(void)
         }
     }
 
-    off_t *data;
-    data = new off_t[threadNum];
+    qint64 *data;
+    data = new qint64[threadNum];
 
     for(i = 0; i < threadNum; i ++){
         data[i] = blocks[i].startPoint;
@@ -782,7 +782,7 @@ Downloader::file_download(void)
     delete[] data;
     // recheck the size of the file if possible
     if(task.get_file_size() >= 0){
-        off_t downloaded;
+        qint64 downloaded;
         downloaded = 0;
         for(i = 0; i < threadNum; i ++){
             downloaded += blocks[i].downloaded;

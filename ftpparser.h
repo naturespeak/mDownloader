@@ -27,6 +27,8 @@
 
 #include <sys/types.h>
 
+#include <QtGlobal>
+
 class FtpParser
 {
 	public:
@@ -35,7 +37,7 @@ class FtpParser
 
 		const char *get_file(void);
 		const char *get_link(void);
-		off_t get_size(void);
+		qint64 get_size(void);
 		time_t get_time(void);
 		char get_type(void);
 
@@ -49,7 +51,7 @@ class FtpParser
 	private:
 		const char *file;
 		const char *link;
-		off_t size;
+		qint64 size;
 		time_t time;
 		char type;
 };

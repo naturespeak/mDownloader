@@ -46,11 +46,11 @@ Task::~Task()
 	delete[] referer;
 }
 	
-const off_t Task::get_file_size()
+const qint64 Task::get_file_size()
 {
     return fileSize;
 }
-void Task::set_file_size(off_t size)
+void Task::set_file_size(qint64 size)
 {
     fileSize = size;
 }

@@ -209,7 +209,7 @@ Ftp::pwd(char** dir)
 };
 
 int
-Ftp::size(const char *file, off_t *size)
+Ftp::size(const char *file, qint64 *size)
 {
 	int ret;
 	char *ptr;
@@ -237,7 +237,7 @@ Ftp::size(const char *file, off_t *size)
 };
 
 int
-Ftp::rest(off_t offset)
+Ftp::rest(qint64 offset)
 {
 	int ret;
 	if(offset < 0) return -1;
@@ -394,7 +394,7 @@ Ftp::port(int port)
 // set command to the server and wating data-connection
 // opened successfully
 int
-Ftp::ftp_data_cmd(const char* cmd, const char* args, off_t offset)
+Ftp::ftp_data_cmd(const char* cmd, const char* args, qint64 offset)
 {
 	int ret;
 	int port;
@@ -500,7 +500,7 @@ Ftp::list(const char *dir)
 };
 
 int
-Ftp::retr(const char *file, off_t offset)
+Ftp::retr(const char *file, qint64 offset)
 {
 	if(!file) return -1;
 

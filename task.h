@@ -27,6 +27,8 @@
 #include <sys/types.h>
 #include <stdio.h>
 
+#include <QtGlobal>
+
 #include "macro.h"
 #include "url.h"
 #include "proxy.h"
@@ -38,8 +40,8 @@ class Task
         ~Task(void);
 
 	public:
-        const off_t get_file_size();
-        void set_file_size(off_t size);
+        const qint64 get_file_size();
+        void set_file_size(qint64 size);
 
         const char* get_local_dir(void);
         void set_local_dir(const char *dir);
@@ -116,7 +118,7 @@ class Task
         long timeout;
         long retryInterval;
         int tryCount;
-        off_t fileSize;
+        qint64 fileSize;
 		char *localDir;
 		char *localFile;
 		char *referer;
