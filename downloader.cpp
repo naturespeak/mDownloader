@@ -750,7 +750,7 @@ Downloader::file_download(void)
 
     pb->set_total_size(task.get_file_size());
     cerr << "file_download: task.fileSize" << task.get_file_size();
-    emit set_GuiProgressBarMaximum(task.get_file_size());
+    emit set_GuiProgressBarMaximum(100);
     pb->set_block_num(threadNum);
     pb->set_start_point(data);
 
@@ -767,7 +767,9 @@ Downloader::file_download(void)
             data[i] = blocks[i].downloaded;
         }
         pb->update(data);
-        emit set_GuiProgressBarValue(pb->get_curr_downloaded());
+        float downloadedRatio = (float)(pb->get_curr_downloaded()) / (float)(task.get_file_size()) * 100;
+        cerr << "downloadedRatio: " << downloadedRatio;
+        emit set_GuiProgressBarValue(downloadedRatio);
         emit set_GuiLabelDownloaded(QString(pb->get_downloaded()));
         emit set_GuiLabelSpeed(QString(pb->get_downloadRate()) + QString("/S"));
         emit set_GuiLabelRemainingTime(QString(pb->get_eta()));
@@ -818,7 +820,7 @@ Downloader::file_download(void)
 
     time = get_current_time() - time;
     convert_time(buf, time);
-    emit set_GuiProgressBarValue(task.get_file_size());
+    emit set_GuiProgressBarValue(100);
 
     cout<< endl << "Download successfully in "<<buf<<endl;
     errorMsg = QString("Download successfully in ");
