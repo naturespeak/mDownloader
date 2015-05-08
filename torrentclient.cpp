@@ -410,6 +410,11 @@ QString TorrentClient::errorString() const
     return d->errorString;
 }
 
+qint64 TorrentClient::totalSize() const
+{
+    return d->metaInfo.totalSize();
+}
+
 QByteArray TorrentClient::peerId() const
 {
     return d->peerId;
@@ -522,6 +527,7 @@ void TorrentClient::timerEvent(QTimerEvent *event)
     d->downloadRate[0] = 0;
     emit uploadRateUpdated(int(uploadBytesPerSecond));
     emit downloadRateUpdated(int(downloadBytesPerSecond));
+    emit downloadedUpdated(downloadedBytes());
 
     // Stop the timer if there is no activity.
     if (downloadBytesPerSecond == 0 && uploadBytesPerSecond == 0) {

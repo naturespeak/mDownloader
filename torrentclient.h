@@ -136,6 +136,8 @@ public:
     Error error() const;
     QString errorString() const;
 
+    qint64 totalSize() const;
+
 signals:
     void stateChanged(TorrentClient::State state);
     void error(TorrentClient::Error error);
@@ -146,6 +148,7 @@ signals:
     void dataSent(int uploadedBytes);
     void dataReceived(int downloadedBytes);
     void progressUpdated(int percentProgress);
+    void downloadedUpdated(qint64 downloaded);
     void downloadRateUpdated(int bytesPerSecond);
     void uploadRateUpdated(int bytesPerSecond);
 

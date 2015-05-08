@@ -83,6 +83,7 @@ private slots:
     void updatePeerInfo();
     void updateProgress(int percent);
     void updateDownloadRate(int bytesPerSecond);
+    void updateDownloadedBytes(qint64 downloaded);
     void updateUploadRate(int bytesPerSecond);
 
 
@@ -98,6 +99,8 @@ signals:
     void resumeTask(void);
 
 private:
+    bool m_is_torrent_mode;
+    qint64 speedBytesPerSecond;
     Ui::MainWindowDownloader *ui;
     QString m_downloadedFileName;
     QString m_downloadedDirectory;

@@ -34,6 +34,7 @@
 
 #include "ratecontroller.h"
 #include "torrentclient.h"
+#include "utils.h"
 
 #include <WINSOCK2.H>
 #pragma comment(lib, "ws2_32.lib")
@@ -59,6 +60,7 @@ MainWindowDownloader::MainWindowDownloader(QWidget *parent) :
     m_is_downloading_finished = true;
     m_is_downloading_paused = true;
     m_has_error_happend = false;
+    m_is_torrent_mode = false;
     ui->pushButtonPause->setDisabled(true);
 }
 
@@ -133,6 +135,7 @@ void MainWindowDownloader::addTorrentSlot(const QString &fileName, const QString
     setDownloadLimit(4096);
     ui->labelSpeed->setText("Down speed: ");
     addTorrent(fileName, destinationFolder);
+    m_is_torrent_mode = true;
 }
 
 void MainWindowDownloader::on_pushButtonOpenDir_clicked()
@@ -160,20 +163,52 @@ void MainWindowDownloader::on_pushButtonPause_clicked()
 
 void MainWindowDownloader::closeEvent(QCloseEvent *event)
 {
-    if (m_is_downloading_started == false && m_is_downloading_finished == true && m_is_downloading_paused == true) {        // Not downloading
-        event->accept();
+    if (m_is_torrent_mode)
+    {
+        if (jobs.isEmpty())
+            return;
+
+        // Save upload / download numbers.
+        saveSettings();
+        saveChanges = false;
+
+        quitDialog = new QProgressDialog(tr("Disconnecting from trackers"), tr("Abort"), 0, jobsToStop, this);
+
+        // Stop all clients, remove the rows from the view and wait for
+        // them to signal that they have stopped.
+        jobsToStop = 0;
+        jobsStopped = 0;
+        foreach (Job job, jobs) {
+            ++jobsToStop;
+            TorrentClient *client = job.client;
+            client->disconnect();
+            connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
+            client->stop();
+        }
+
+        if (jobsToStop > jobsStopped)
+            quitDialog->exec();
+        quitDialog->deleteLater();
+        quitDialog = 0;
         WSACleanup();
-    }else if (m_is_downloading_started == true && m_is_downloading_finished == true && m_is_downloading_paused == true) {   // Paused
-        event->accept();
-        WSACleanup();
-    }else if (m_is_downloading_started == true && m_is_downloading_finished == false && m_is_downloading_paused == false) { // Downloading
-        msgBox.setText("Downloading is in progress. Please press Pause first.");
-        msgBox.exec();
-        event->ignore();
-    }else {                                                                                                                 // Impossible case, Defending programming
-        msgBox.setText("Downloading is in progress. Please press Pause first.");
-        msgBox.exec();
-        event->ignore();
+    }
+    else
+    {
+        if (m_is_downloading_started == false && m_is_downloading_finished == true && m_is_downloading_paused == true) {        // Not downloading
+            event->accept();
+            WSACleanup();
+        }else if (m_is_downloading_started == true && m_is_downloading_finished == true && m_is_downloading_paused == true) {   // Paused
+            event->accept();
+            WSACleanup();
+        }else if (m_is_downloading_started == true && m_is_downloading_finished == false && m_is_downloading_paused == false) { // Downloading
+            msgBox.setText("Downloading is in progress. Please press Pause first.");
+            msgBox.exec();
+            event->ignore();
+        }else {                                                                                                                 // Impossible case, Defending programming
+            msgBox.setText("Downloading is in progress. Please press Pause first.");
+            msgBox.exec();
+            event->ignore();
+        }
     }
 }
 
@@ -267,6 +302,7 @@ bool MainWindowDownloader::addTorrent(const QString &fileName, const QString &de
     connect(client, SIGNAL(peerInfoUpdated()), this, SLOT(updatePeerInfo()));
     connect(client, SIGNAL(progressUpdated(int)), this, SLOT(updateProgress(int)));
     connect(client, SIGNAL(downloadRateUpdated(int)), this, SLOT(updateDownloadRate(int)));
+    connect(client, SIGNAL(downloadedUpdated(qint64)), this, SLOT(updateDownloadedBytes(qint64)));
     connect(client, SIGNAL(uploadRateUpdated(int)), this, SLOT(updateUploadRate(int)));
     connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
     connect(client, SIGNAL(error(TorrentClient::Error)), this, SLOT(torrentError(TorrentClient::Error)));
@@ -287,6 +323,9 @@ bool MainWindowDownloader::addTorrent(const QString &fileName, const QString &de
     setDownloadedDirectory(destinationFolder);
     set_ProgressBarMaximum(100);
     set_ProgressBarMinimum(0);
+    char buf[20];
+    convert_size(buf, client->totalSize());
+    set_labelTotal(buf);
 
     if (!saveChanges) {
         saveChanges = true;
@@ -325,6 +364,7 @@ void MainWindowDownloader::updateProgress(int percent)
 void MainWindowDownloader::updateDownloadRate(int bytesPerSecond)
 {
     // Update the download rate.
+    speedBytesPerSecond = bytesPerSecond;
     TorrentClient *client = qobject_cast<TorrentClient *>(sender());
     int row = rowOfClient(client);
     QString num;
@@ -335,6 +375,21 @@ void MainWindowDownloader::updateDownloadRate(int bytesPerSecond)
         saveChanges = true;
         QTimer::singleShot(5000, this, SLOT(saveSettings()));
     }
+}
+
+void MainWindowDownloader::updateDownloadedBytes(qint64 downloaded)
+{
+    TorrentClient *client = qobject_cast<TorrentClient *>(sender());
+    char time_string[20];
+    if(speedBytesPerSecond >= 1){
+        convert_time(time_string, (client->totalSize() - downloaded) / speedBytesPerSecond);
+    }else{
+        sprintf(time_string, "--:--");
+    }
+    char size_string[20];
+    convert_size(size_string, downloaded);
+    set_labelDownloaded(size_string);
+    set_labelRemainingTime(time_string);
 }
 
 void MainWindowDownloader::updateUploadRate(int bytesPerSecond)
