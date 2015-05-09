@@ -27,16 +27,6 @@
 #include <QDialog>
 #include <QProgressDialog>
 
-#include "torrentclient.h"
-
-QT_BEGIN_NAMESPACE
-class QAction;
-class QCloseEvent;
-class QLabel;
-class QProgressDialog;
-class QSlider;
-QT_END_NAMESPACE
-
 
 namespace Ui {
 class NewTask;
@@ -56,19 +46,11 @@ private slots:
     void on_pushButtonSetSaveLocation_clicked();
     void setFileNameSlot(QString);
 
-    void on_pushButtonNewTorrent_clicked();
-
-    void saveSettingsSlot();
-
 
 private:
     Ui::NewTask *ui;
     QString m_dir;
     QString m_localFileName;
-
-    QString lastDirectory;
-
-    bool saveChanges;
 
 
 signals:
@@ -77,8 +59,7 @@ signals:
     void setSaveLocation(QString);
     void setDownloadedDirectory(QString);
     void setThreadNum(int);
-    void addTorrent(const QString &fileName, const QString &destinationFolder);
-    void saveSettings();
+
 };
 
 #endif // NEWTASK_H

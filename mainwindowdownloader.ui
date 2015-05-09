@@ -194,6 +194,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButtonTorrent">
+        <property name="text">
+         <string>Torrent</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonDelTorrent">
+        <property name="text">
+         <string>Del Torrent</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

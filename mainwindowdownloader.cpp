@@ -31,10 +31,12 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QSettings>
+#include <QFileDialog>
 
 #include "ratecontroller.h"
 #include "torrentclient.h"
 #include "utils.h"
+#include "addtorrentdialog.h"
 
 #include <WINSOCK2.H>
 #pragma comment(lib, "ws2_32.lib")
@@ -62,6 +64,7 @@ MainWindowDownloader::MainWindowDownloader(QWidget *parent) :
     m_has_error_happend = false;
     m_is_torrent_mode = false;
     ui->pushButtonPause->setDisabled(true);
+    QMetaObject::invokeMethod(this, "loadSettings", Qt::QueuedConnection);
 }
 
 MainWindowDownloader::~MainWindowDownloader()
@@ -129,15 +132,6 @@ void MainWindowDownloader::on_error_happens(QString errorMsg)
     }
 }
 
-void MainWindowDownloader::addTorrentSlot(const QString &fileName, const QString &destinationFolder)
-{
-    setUploadLimit(1024);
-    setDownloadLimit(4096);
-    ui->labelSpeed->setText("Down speed: ");
-    addTorrent(fileName, destinationFolder);
-    m_is_torrent_mode = true;
-}
-
 void MainWindowDownloader::on_pushButtonOpenDir_clicked()
 {
     QDesktopServices::openUrl(QUrl("file:///" + m_downloadedDirectory));
@@ -166,7 +160,10 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
     if (m_is_torrent_mode)
     {
         if (jobs.isEmpty())
+        {
+            cerr << "jobs is empty.";
             return;
+        }
 
         // Save upload / download numbers.
         saveSettings();
@@ -390,6 +387,10 @@ void MainWindowDownloader::updateDownloadedBytes(qint64 downloaded)
     convert_size(size_string, downloaded);
     set_labelDownloaded(size_string);
     set_labelRemainingTime(time_string);
+    if (!saveChanges) {
+        saveChanges = true;
+        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+    }
 }
 
 void MainWindowDownloader::updateUploadRate(int bytesPerSecond)
@@ -445,10 +446,10 @@ void MainWindowDownloader::saveSettings()
     saveChanges = false;
 
     // Prepare and reset the settings
-    QSettings settings("Chuan Qin", jobs.at(0).torrentFileName);
+    QSettings settings("Chuan Qin", "mDownloader");
     settings.clear();
 
-//    settings.setValue("LastDirectory", lastDirectory);
+    settings.setValue("LastDirectory", lastDirectory);
 //    settings.setValue("UploadLimit", uploadLimitSlider->value());
 //    settings.setValue("DownloadLimit", downloadLimitSlider->value());
 
@@ -464,4 +465,90 @@ void MainWindowDownloader::saveSettings()
     }
     settings.endArray();
     settings.sync();
+}
+
+void MainWindowDownloader::loadSettings()
+{
+    // Load base settings (last working directory, upload/download limits).
+    QSettings settings("Chuan Qin", "mDownloader");
+    lastDirectory = settings.value("LastDirectory").toString();
+    if (lastDirectory.isEmpty())
+        lastDirectory = QDir::currentPath();
+
+//    int up = settings.value("UploadLimit").toInt();
+//    int down = settings.value("DownloadLimit").toInt();
+//    uploadLimitSlider->setValue(up ? up : 170);
+//    downloadLimitSlider->setValue(down ? down : 550);
+
+    // Resume all previous downloads.
+    int size = settings.beginReadArray("Torrents");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        QByteArray resumeState = settings.value("resumeState").toByteArray();
+        QString fileName = settings.value("sourceFileName").toString();
+        QString dest = settings.value("destinationFolder").toString();
+
+        if (addTorrent(fileName, dest, resumeState)) {
+            TorrentClient *client = jobs.last().client;
+            client->setDownloadedBytes(settings.value("downloadedBytes").toLongLong());
+            client->setUploadedBytes(settings.value("uploadedBytes").toLongLong());
+        }
+    }
+}
+
+void MainWindowDownloader::on_pushButtonTorrent_clicked()
+{
+    // Show the file dialog, let the user select what torrent to start downloading.
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose a torrent file"),
+                                                    lastDirectory,
+                                                    tr("Torrents (*.torrent);;"
+                                                       " All files (*.*)"));
+    if (fileName.isEmpty())
+        return;
+    lastDirectory = QFileInfo(fileName).absolutePath();
+
+    // Show the "Add Torrent" dialog.
+    AddTorrentDialog *addTorrentDialog = new AddTorrentDialog(this);
+    addTorrentDialog->setTorrent(fileName);
+    addTorrentDialog->deleteLater();
+    if (!addTorrentDialog->exec())
+        return;
+
+    // Add the torrent to our list of downloads
+    addTorrent(fileName, addTorrentDialog->destinationFolder());
+    if (!saveChanges) {
+        saveChanges = true;
+        QTimer::singleShot(1000, this, SLOT(saveSettings()));
+    }
+}
+
+void MainWindowDownloader::on_pushButtonDelTorrent_clicked()
+{
+    // Find the row of the current item, and find the torrent client
+    // for that row.
+//    int row = torrentView->indexOfTopLevelItem(torrentView->currentItem());
+    TorrentClient *client = jobs.at(0).client;
+
+    // Stop the client.
+    client->disconnect();
+    connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
+    client->stop();
+
+    // Remove the row from the view.
+//    delete torrentView->takeTopLevelItem(row);
+    jobs.removeFirst();
+
+    setDownloadedFileName("FileName");
+    setDownloadedDirectory(lastDirectory);
+    set_ProgressBarValue(0);
+    set_labelRemainingTime("--:--");
+    set_labelTotal("--");
+    ui->labelTorrentStatusValue->setText("--");
+    ui->labelPeersSeedsValue->setText("--/--");
+
+    updateDownloadRate(0);
+    updateDownloadedBytes(0);
+    updateUploadRate(0);
+    saveChanges = true;
+    saveSettings();
 }

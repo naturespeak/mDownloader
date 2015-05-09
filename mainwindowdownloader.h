@@ -63,8 +63,8 @@ public slots:
     void set_labelDownloadSpeed(QString);
     void set_labelRemainingTime(QString);
     void on_error_happens(QString);
-    void addTorrentSlot(const QString &fileName, const QString &destinationFolder);
     void saveSettings();
+    void loadSettings();
 
 private slots:
     void on_pushButtonNew_clicked();
@@ -92,6 +92,10 @@ private slots:
 
     void torrentStopped();
     void torrentError(TorrentClient::Error error);
+
+    void on_pushButtonTorrent_clicked();
+
+    void on_pushButtonDelTorrent_clicked();
 
 signals:
     void newTaskShow(void);
@@ -122,6 +126,8 @@ private:
     QProgressDialog *quitDialog;
 
     bool saveChanges;
+    QString lastDirectory;
+
 
     int rowOfClient(TorrentClient *client) const;
     bool addTorrent(const QString &fileName, const QString &destinationFolder,
