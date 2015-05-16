@@ -157,12 +157,15 @@ void MainWindowDownloader::on_pushButtonPause_clicked()
 
 void MainWindowDownloader::closeEvent(QCloseEvent *event)
 {
+    qDebug() << "closeEvent is called";
     if (m_is_torrent_mode)
     {
         if (jobs.isEmpty())
         {
-            cerr << "jobs is empty.";
+            qDebug() << "jobs is empty.";
             return;
+        }else {
+            qDebug() << "jobs is not empty";
         }
 
         // Save upload / download numbers.
@@ -498,6 +501,8 @@ void MainWindowDownloader::loadSettings()
 
 void MainWindowDownloader::on_pushButtonTorrent_clicked()
 {
+    m_is_torrent_mode = true;
+    qDebug() << "m_is_torrent_mode: " << m_is_torrent_mode;
     // Show the file dialog, let the user select what torrent to start downloading.
     QString fileName = QFileDialog::getOpenFileName(this, tr("Choose a torrent file"),
                                                     lastDirectory,

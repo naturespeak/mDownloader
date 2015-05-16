@@ -44,6 +44,7 @@
 #include <QDateTime>
 #include <QMetaType>
 #include <QString>
+#include <QDebug>
 
 MetaInfo::MetaInfo()
 {
@@ -126,8 +127,18 @@ bool MetaInfo::parse(const QByteArray &data)
 
     metaInfoAnnounce = QString::fromUtf8(dict.value("announce").toByteArray());
 
+    qDebug() << "metaInfoAnnounce: " << metaInfoAnnounce;
+
     if (dict.contains("announce-list")) {
+         QList<QVariant> trackerList = dict.value("announce-list").toList();
+
         // ### unimplemented
+        qDebug() << "metaInfoAnnounceList: ";
+        for (int i=0; i < trackerList.size(); i++)
+        {
+            metaInfoAnnounceList.append(qvariant_cast<QString>(trackerList.at(i)));
+            qDebug() << metaInfoAnnounceList.at(i);
+        }
     }
 
     if (dict.contains("creation date"))
