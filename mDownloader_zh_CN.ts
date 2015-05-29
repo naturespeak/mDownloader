@@ -5,6 +5,7 @@
     <name>MainWindowDownloader</name>
     <message>
         <location filename="mainwindowdownloader.ui" line="20"/>
+        <location filename="mainwindowdownloader.cpp" line="195"/>
         <source>mDownloader</source>
         <translation>多线程下载器</translation>
     </message>
@@ -127,6 +128,11 @@
         <location filename="newtask.ui" line="98"/>
         <source>Number of threads: </source>
         <translation>线程数：</translation>
+    </message>
+    <message>
+        <location filename="newtask.cpp" line="41"/>
+        <source>Paste or input the URL of the file you want to download here.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="newtask.cpp" line="79"/>

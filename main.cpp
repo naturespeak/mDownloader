@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
        a.installTranslator(&qtTranslator);
 
        QTranslator myappTranslator;
-       myappTranslator.load("myapp_" + QLocale::system().name());
+       myappTranslator.load("mDownloader_" + QLocale::system().name());
        a.installTranslator(&myappTranslator);
 
     a.setQuitOnLastWindowClosed(true);
