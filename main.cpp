@@ -34,8 +34,12 @@ using namespace std;
 #include <QObject>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QTranslator>
 
-
+#ifdef min()
+#undef min()
+#include <QLibraryInfo>
+#endif
 
 #ifdef HAVE_SSL
 #	include <openssl/ssl.h>
@@ -52,6 +56,16 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication a(argc, argv);
+
+    QTranslator qtTranslator;
+       qtTranslator.load("qt_" + QLocale::system().name(),
+               QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+       a.installTranslator(&qtTranslator);
+
+       QTranslator myappTranslator;
+       myappTranslator.load("myapp_" + QLocale::system().name());
+       a.installTranslator(&myappTranslator);
+
     a.setQuitOnLastWindowClosed(true);
 
     QDesktopWidget qd;

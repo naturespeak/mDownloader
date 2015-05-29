@@ -185,13 +185,13 @@ void MainWindowDownloader::on_downloading_started(QString)
 void MainWindowDownloader::on_pushButtonAbout_clicked()
 {
     QString about;
-    about = "mDownloader: A GUI download accelerator.";
+    about = tr("mDownloader: A GUI download accelerator.");
     about += QChar::LineSeparator;
-    about += "Version: 1.0.1Build005.";
+    about += tr("Version: 1.0.1Build005.");
     about += QChar::LineSeparator;
-    about += "Written by Chuan Qin. Email: qc2105@qq.com";
+    about += tr("Written by Chuan Qin. Email: qc2105@qq.com");
     about += QChar::LineSeparator;
-    about += "It is based on Qt and Mytget, and licensed under GPL.";
+    about += tr("It is based on Qt and Mytget, and licensed under GPL.");
     msgBox.setText(about);
     msgBox.exec();
 }
