@@ -95,7 +95,7 @@ FtpPlugin::get_info(Task *task)
 
     if(task->get_isDirectory()) return 0;
 
-    off_t size = 0;
+    qint64 size = 0;
     ret = ftp.size(task->get_file(), &size);
     task->set_file_size(size);
 
@@ -201,7 +201,7 @@ FtpPlugin::relogin(Ftp *ftp, Task &task)
 
 int
 FtpPlugin::recursive_get_dir_list(Task &task, Ftp *ftp, const char *tempfile, 
-		const char *absdir, FILE *rfd, FILE *wfd, off_t *woff)
+		const char *absdir, FILE *rfd, FILE *wfd, qint64 *woff)
 {
 	char currdir[1024];
 	char file[1024];
@@ -209,7 +209,7 @@ FtpPlugin::recursive_get_dir_list(Task &task, Ftp *ftp, const char *tempfile,
 	bool is_dir;
 	int ret;
 	FtpParser fp;
-	off_t filesize;
+	qint64 filesize;
 
 	while(1){
 		// get the current work directory
@@ -219,7 +219,7 @@ FtpPlugin::recursive_get_dir_list(Task &task, Ftp *ftp, const char *tempfile,
                     task.get_dir() ? task.get_dir() : "");
 		}else{
 			while(1){
-				if(fread(&filesize, sizeof(off_t), 1, rfd) != 1) return 0;
+				if(fread(&filesize, sizeof(qint64), 1, rfd) != 1) return 0;
 				if(fgets(currdir, 1024, rfd) == NULL){
 					return 0;
 				}else if(currdir[0] == '/'){
@@ -263,11 +263,11 @@ FtpPlugin::recursive_get_dir_list(Task &task, Ftp *ftp, const char *tempfile,
 			if(strcmp(ptr, ".") == 0 || strcmp(ptr, "..") == 0) continue;
 			if(fp.get_type() == 'd'){
 				filesize = 0;
-				fwrite(&filesize, sizeof(off_t), 1, wfd);
+				fwrite(&filesize, sizeof(qint64), 1, wfd);
 				fprintf(wfd, "%s/%s\n", currdir, ptr);
 			}else{
 				filesize = fp.get_size();
-				fwrite(&filesize, sizeof(off_t), 1, wfd);
+				fwrite(&filesize, sizeof(qint64), 1, wfd);
 				fprintf(wfd, "%s/%s\n", currdir + 1, ptr);
 			}
 		}
@@ -318,7 +318,7 @@ _ftp_get_dir_list_conn:
 
 	FILE *rfd;
 	FILE *wfd;
-	off_t woff;
+	qint64 woff;
 
 	rfd = fopen(tempfile, "r");
 	wfd = fopen(tempfile, "r+");

@@ -122,14 +122,14 @@ public:
     bool open(const char *file);
     void close();
 
-    off_t seek(off_t off_set);
-    off_t retr_data_from(PluginIO *pio, off_t *rtlength, off_t length = -1);
+    qint64 seek(qint64 off_set);
+    qint64 retr_data_from(PluginIO *pio, qint64 *rtlength, qint64 length = -1);
 
 private:
     char buf[FILE_BUFFER_SIZE];
     char *ptr;
     int left;
-    int truncate(off_t length);
+    int truncate(qint64 length);
     int flush();
     QFile diskFile;
 };

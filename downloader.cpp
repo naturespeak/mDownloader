@@ -254,7 +254,7 @@ Downloader::init_threads_from_mg(void)
 int
 Downloader::init_threads_from_info(void)
 {
-    off_t block_size;
+    qint64 block_size;
     int i;
 
     threadNum = task.get_threadNum()> 0 ? task.get_threadNum() : 1;
@@ -381,7 +381,7 @@ Downloader::schedule(void)
                 blocks[j].size = 0;
                 i = j;
                 joined += j - i;
-                off_t *data = new off_t[threadNum];
+                qint64 *data = new qint64[threadNum];
                 for(j = 0; j < threadNum; j ++){
                     data[j] = blocks[j].startPoint;
                 }
@@ -632,8 +632,8 @@ Downloader::directory_download(void)
     fd = fopen(tempfile, "r");
     task.set_isDirectory(false);
     while(1){
-        off_t size = 0;
-        if(fread(&size, sizeof(off_t), 1, fd) != 1) {
+        qint64 size = 0;
+        if(fread(&size, sizeof(qint64), 1, fd) != 1) {
             break;
         } else {
             task.set_file_size(size);
@@ -740,8 +740,8 @@ Downloader::file_download(void)
         }
     }
 
-    off_t *data;
-    data = new off_t[threadNum];
+    qint64 *data;
+    data = new qint64[threadNum];
 
     for(i = 0; i < threadNum; i ++){
         data[i] = blocks[i].startPoint;
@@ -750,7 +750,7 @@ Downloader::file_download(void)
 
     pb->set_total_size(task.get_file_size());
     cerr << "file_download: task.fileSize" << task.get_file_size();
-    emit set_GuiProgressBarMaximum(task.get_file_size());
+    emit set_GuiProgressBarMaximum(100);
     pb->set_block_num(threadNum);
     pb->set_start_point(data);
 
@@ -767,7 +767,9 @@ Downloader::file_download(void)
             data[i] = blocks[i].downloaded;
         }
         pb->update(data);
-        emit set_GuiProgressBarValue(pb->get_curr_downloaded());
+        float downloadedRatio = (float)(pb->get_curr_downloaded()) / (float)(task.get_file_size()) * 100;
+        cerr << "downloadedRatio: " << downloadedRatio;
+        emit set_GuiProgressBarValue(downloadedRatio);
         emit set_GuiLabelDownloaded(QString(pb->get_downloaded()));
         emit set_GuiLabelSpeed(QString(pb->get_downloadRate()) + QString("/S"));
         emit set_GuiLabelRemainingTime(QString(pb->get_eta()));
@@ -782,7 +784,7 @@ Downloader::file_download(void)
     delete[] data;
     // recheck the size of the file if possible
     if(task.get_file_size() >= 0){
-        off_t downloaded;
+        qint64 downloaded;
         downloaded = 0;
         for(i = 0; i < threadNum; i ++){
             downloaded += blocks[i].downloaded;
@@ -818,7 +820,7 @@ Downloader::file_download(void)
 
     time = get_current_time() - time;
     convert_time(buf, time);
-    emit set_GuiProgressBarValue(task.get_file_size());
+    emit set_GuiProgressBarValue(100);
 
     cout<< endl << "Download successfully in "<<buf<<endl;
     errorMsg = QString("Download successfully in ");

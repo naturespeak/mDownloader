@@ -25,6 +25,7 @@
 #define _PROGRESSBAR_H
 
 #include <sys/types.h>
+#include <QtGlobal>
 
 #define MINIMUM_SCREEN_WIDTH 45 // the minimum screen width 
 #define DEFAULT_SCREEN_WIDTH 80 // the default screen width when can not get the screen width
@@ -34,15 +35,15 @@
 class ProgressBar
 {
 	public:
-		ProgressBar(off_t total_size = 0, int block_num = 1);
+		ProgressBar(qint64 total_size = 0, int block_num = 1);
 		~ProgressBar();
 
-		void set_start_point(off_t *start_point);
-        void set_total_size(off_t size){ totalSize = size; }
+		void set_start_point(qint64 *start_point);
+        void set_total_size(qint64 size){ totalSize = size; }
 		void set_block_num(int num);
-		void update(off_t *data);
+		void update(qint64 *data);
 		void init(void);
-        off_t get_curr_downloaded(void);
+        qint64 get_curr_downloaded(void);
         long get_percent(void);
         char *get_downloaded(void);
         char *get_downloadRate(void);
@@ -53,9 +54,9 @@ class ProgressBar
 		
 	private:
 		double lastTime; // the last time of update
-		off_t lastDownloaded; // the total size of the already download part
-		off_t totalSize; // the total size of the file in bytes
-		off_t *startPoint; // save the start points
+		qint64 lastDownloaded; // the total size of the already download part
+		qint64 totalSize; // the total size of the file in bytes
+		qint64 *startPoint; // save the start points
 		int blockNum; // blockNum
 		bool show; // can show or not
 
@@ -63,7 +64,7 @@ class ProgressBar
 		int rateIndex;
 		int rateCount;
 
-        off_t curr_downloaded;
+        qint64 curr_downloaded;
         long percent;
         char downloaded[5];
         char downloadRate[5];

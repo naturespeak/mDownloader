@@ -462,8 +462,8 @@ _flush_again:
 	}
 };
 
-off_t
-BufferFile::seek(off_t off_set)
+qint64
+BufferFile::seek(qint64 off_set)
 {
 	// before seek we must flush the buffer,
 	// if not we will write the data to the wrong postion
@@ -476,7 +476,7 @@ BufferFile::seek(off_t off_set)
 }
 
 int
-BufferFile::truncate(off_t length)
+BufferFile::truncate(qint64 length)
 {
     return diskFile.resize(length);
 }
@@ -484,12 +484,12 @@ BufferFile::truncate(off_t length)
 // get length bytes data from pio, and argument rtlength
 // is used to real-time reflect the change, if the length is set
 // to -1, this function will read all the data
-off_t
-BufferFile::retr_data_from(PluginIO *pio, off_t *rtlength, off_t length)
+qint64
+BufferFile::retr_data_from(PluginIO *pio, qint64 *rtlength, qint64 length)
 {
 	assert(pio != NULL);
 	int ret;
-	off_t data_count = 0;
+	qint64 data_count = 0;
 
 	while(1){
 		ret = pio->read_data(ptr, left);

@@ -44,7 +44,7 @@ using std::endl;
 
 int ProgressBar::graphWidth = 0;
 
-ProgressBar::ProgressBar(off_t total_size, int block_num)
+ProgressBar::ProgressBar(qint64 total_size, int block_num)
 	:totalSize(total_size), blockNum(block_num), lastDownloaded(0), direction(RIGHT)
 {
 	char *term;
@@ -60,7 +60,7 @@ ProgressBar::ProgressBar(off_t total_size, int block_num)
 		rates[i] = 0;
 	}
 
-	startPoint = new off_t[blockNum];	
+	startPoint = new qint64[blockNum];	
 	for(i = 0; i < blockNum; i++ ){
 		startPoint[i] = 0;
 	}
@@ -117,7 +117,7 @@ ProgressBar::init(void)
 	}
 }
 
-off_t
+qint64
 ProgressBar::get_curr_downloaded(void)
 {
     return curr_downloaded;
@@ -154,14 +154,14 @@ ProgressBar::set_block_num(int num)
 
 	blockNum = num;
 	delete[] startPoint;
-	startPoint = new off_t[blockNum];
+	startPoint = new qint64[blockNum];
 	for(i = 0; i < blockNum; i++ ){
 		startPoint[i] = 0;
 	}
 }
 
 void
-ProgressBar::set_start_point(off_t *data)
+ProgressBar::set_start_point(qint64 *data)
 {
 	int i;
 	
@@ -173,12 +173,12 @@ ProgressBar::set_start_point(off_t *data)
 
 // data [block1][block2][block3]
 void
-ProgressBar::update(off_t *data)
+ProgressBar::update(qint64 *data)
 {
 	double curr_time;
 	float rate;
 	int i;
-	off_t graph_step;
+	qint64 graph_step;
 
 	assert(data != NULL);
 
@@ -206,7 +206,7 @@ ProgressBar::update(off_t *data)
 		}
 		rate /= rateCount;
 	}
-	convert_size(downloadRate, (off_t)rate);
+	convert_size(downloadRate, (qint64)rate);
 	graph_step = totalSize / graphWidth;
 	if(graph_step <= 0){
 		percent = 100;

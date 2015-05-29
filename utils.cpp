@@ -173,7 +173,7 @@ get_current_time(void)
 
 // conver size to 333M, 111K, 1G
 void
-convert_size(char *sizeStr, off_t size)
+convert_size(char *sizeStr, qint64 size)
 {
 	double dsize = size;
 
