@@ -68,3 +68,5 @@ RESOURCES += \
 
 LIBS += -LC:/OpenSSL-Win32/lib -lssleay32
 INCLUDEPATH += C:/OpenSSL-Win32/include
+
+TRANSLATIONS = mDownloader_cn.ts
