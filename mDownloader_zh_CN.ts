@@ -132,7 +132,7 @@
     <message>
         <location filename="newtask.cpp" line="41"/>
         <source>Paste or input the URL of the file you want to download here.</source>
-        <translation type="unfinished"></translation>
+        <translation>复制下载文件链接地址将其粘帖到此处。</translation>
     </message>
     <message>
         <location filename="newtask.cpp" line="79"/>
