@@ -2,6 +2,37 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
+    <name>Downloader</name>
+    <message>
+        <location filename="downloader.cpp" line="475"/>
+        <source>Downloading paused.</source>
+        <translation>下载已暂停。</translation>
+    </message>
+    <message>
+        <location filename="downloader.cpp" line="690"/>
+        <source>The file already exists: </source>
+        <translation>文件已存在：</translation>
+    </message>
+    <message>
+        <location filename="downloader.cpp" line="826"/>
+        <source>Download successfully in </source>
+        <translation>下载成功，用时 </translation>
+    </message>
+    <message>
+        <location filename="downloader.cpp" line="841"/>
+        <source>Can not get the info of the file </source>
+        <translation>不能获取远程文件信息</translation>
+    </message>
+</context>
+<context>
+    <name>ErrorMessageBox</name>
+    <message>
+        <location filename="errormessagebox.cpp" line="35"/>
+        <source>mDownloader</source>
+        <translation>多线程下载器</translation>
+    </message>
+</context>
+<context>
     <name>MainWindowDownloader</name>
     <message>
         <location filename="mainwindowdownloader.ui" line="20"/>
@@ -16,6 +47,7 @@
     </message>
     <message>
         <location filename="mainwindowdownloader.ui" line="47"/>
+        <location filename="mainwindowdownloader.cpp" line="138"/>
         <source>Pause</source>
         <translation>暂停</translation>
     </message>
@@ -75,6 +107,22 @@
         <location filename="mainwindowdownloader.ui" line="161"/>
         <source>this</source>
         <translation>此</translation>
+    </message>
+    <message>
+        <location filename="mainwindowdownloader.cpp" line="116"/>
+        <source>Download successfully in</source>
+        <translation>下载成功，用时 </translation>
+    </message>
+    <message>
+        <location filename="mainwindowdownloader.cpp" line="135"/>
+        <source>Resume</source>
+        <translation>恢复</translation>
+    </message>
+    <message>
+        <location filename="mainwindowdownloader.cpp" line="155"/>
+        <location filename="mainwindowdownloader.cpp" line="159"/>
+        <source>Downloading is in progress. Please press Pause first.</source>
+        <translation>下载中，请先点击暂停按钮。</translation>
     </message>
     <message>
         <location filename="mainwindowdownloader.cpp" line="188"/>

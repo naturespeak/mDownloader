@@ -113,7 +113,7 @@ void MainWindowDownloader::set_labelRemainingTime(QString remainingTime)
 void MainWindowDownloader::on_error_happens(QString errorMsg)
 {
     // When the downloading succeeds m_has_error_happend should keep to be false.
-    if (!errorMsg.contains("Download successfully in")) {
+    if (!errorMsg.contains(tr("Download successfully in"))) {
         m_has_error_happend = true;
     } else {
         m_has_error_happend = false;
@@ -132,10 +132,10 @@ void MainWindowDownloader::on_pushButtonPause_clicked()
         m_is_downloading_paused = true;
         m_is_downloading_started = true;
         m_is_downloading_finished = true;
-        ui->pushButtonPause->setText("Resume");
+        ui->pushButtonPause->setText(tr("Resume"));
     }else{
         //Resume the task, into state DOWNLOADING
-        ui->pushButtonPause->setText("Pause");
+        ui->pushButtonPause->setText(tr("Pause"));
         emit resumeTask();
         m_is_downloading_paused = false;
         m_is_downloading_finished = false;
@@ -152,11 +152,11 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
         event->accept();
         WSACleanup();
     }else if (m_is_downloading_started == true && m_is_downloading_finished == false && m_is_downloading_paused == false) { // Downloading
-        msgBox.setText("Downloading is in progress. Please press Pause first.");
+        msgBox.setText(tr("Downloading is in progress. Please press Pause first."));
         msgBox.exec();
         event->ignore();
     }else {                                                                                                                 // Impossible case, Defending programming
-        msgBox.setText("Downloading is in progress. Please press Pause first.");
+        msgBox.setText(tr("Downloading is in progress. Please press Pause first."));
         msgBox.exec();
         event->ignore();
     }

@@ -60,8 +60,6 @@ HEADERS  += mainwindowdownloader.h \
 FORMS    += mainwindowdownloader.ui \
     newtask.ui
 
-OTHER_FILES += \
-    mDownloader.pro.user
 
 RESOURCES += \
     mDownloader.qrc
