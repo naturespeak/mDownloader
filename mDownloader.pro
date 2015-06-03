@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     url.cpp \
     utils.cpp \
     newtask.cpp \
-    errormessagebox.cpp
+    errormessagebox.cpp \
+    hashworker.cpp
 
 HEADERS  += mainwindowdownloader.h \
     advio.h \
@@ -55,7 +56,8 @@ HEADERS  += mainwindowdownloader.h \
     url.h \
     utils.h \
     newtask.h \
-    errormessagebox.h
+    errormessagebox.h \
+    hashworker.h
 
 FORMS    += mainwindowdownloader.ui \
     newtask.ui

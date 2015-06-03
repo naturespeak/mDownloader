@@ -33,6 +33,7 @@
 #include "progressbar.h"
 #include "debug.h"
 #include "header.h"
+#include "hashworker.h"
 
 #include <QDir>
 #include <QByteArray>
@@ -65,13 +66,30 @@ Downloader::Downloader(QWidget *parent) :
 {
     sigint_received = false;
     is_downloading = false;
+    is_test_mode = false;
     plugin = NULL;
     blocks = NULL;
     localPath = NULL;
     localMg = NULL;
+    fileHash = QString("");
     pb = new ProgressBar;
     is_dirSetted = false;
     emit set_GuiProgressBarMinimum(0);
+}
+
+void Downloader::setHash(QString hash)
+{
+    fileHash = hash;
+        cerr << "Caculated hash: " << fileHash.toStdString() << endl;
+        cerr << "Expected hash: " << "3aced4e6e5740c085d743aa2d042c6a4" << endl;
+    if (fileHash == QString("3aced4e6e5740c085d743aa2d042c6a4"))
+    {
+        cerr << "Download hash test: OK!" << endl;
+    }
+    else
+    {
+        cerr << "Download hash test: failed!" << endl;
+    }
 }
 
 Downloader::~Downloader(void)
@@ -318,6 +336,32 @@ Downloader::self(QThread *ptr_thread)
             if(blocks[i].ptr_thread == self) return i;
         }
         // the parent thread maybe slower than me
+    }
+}
+
+void
+Downloader::test(QString url)
+{
+    ::remove("test.test");
+    setLocalFileName("test.test");
+    setLocalDirectory(QDir::currentPath());
+    setThreadNum(11);
+    runMyself(url);
+}
+
+void
+Downloader::setTestMode(bool val)
+{
+    is_test_mode = val;
+    if (is_test_mode)
+    {
+        HashWorker *worker = new HashWorker;
+        worker->moveToThread(&hashWorkerThread);
+        connect(&hashWorkerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
+        connect(this, SIGNAL(operate(QString,QString)), worker, SLOT(doHashWork(QString,QString)));
+        connect(worker, SIGNAL(resultReady(QString)), this, SLOT(setHash(QString)));
+    //    connect(worker, SIGNAL(currentProgress(int)), this, SLOT(setCurrentProgress(int)));
+        hashWorkerThread.start();
     }
 }
 
@@ -685,7 +729,7 @@ Downloader::file_download(void)
     QString errorMsg;
 
     init_local_file_name();
-    if(file_exist(localPath)){
+    if(file_exist(localPath) && !is_test_mode){
         cout<<"File already exist: "<<localPath<<endl;
         errorMsg = QString(tr("The file already exists: "));
         errorMsg += QDir::toNativeSeparators(localPath);
@@ -810,7 +854,7 @@ Downloader::file_download(void)
         cerr << "Rename succeed." << endl;
         QFile downloadedFile(localPath);
 
-        if (!sigint_received && !downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
+        if (!downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
         {
             cerr<<"Resize the downloaed file failed"<<endl;
             emit errorHappened(QString("Resize the downloaed file failed"));
@@ -827,6 +871,9 @@ Downloader::file_download(void)
     errorMsg += QString(buf);
     emit errorHappened(errorMsg);
     emit done();
+    if (is_test_mode) {
+        emit operate(localPath, "Md5");
+    }
     return 0;
 }
 
