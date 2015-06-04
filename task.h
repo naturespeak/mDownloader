@@ -28,6 +28,8 @@
 #include <QtGlobal>
 #include <stdio.h>
 
+#include <QtGlobal>
+
 #include "macro.h"
 #include "url.h"
 #include "proxy.h"

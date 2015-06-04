@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -32,7 +32,17 @@ SOURCES += main.cpp\
     url.cpp \
     utils.cpp \
     newtask.cpp \
-    errormessagebox.cpp      
+    errormessagebox.cpp \
+    addtorrentdialog.cpp \
+    metainfo.cpp \
+    bencodeparser.cpp \
+    torrentclient.cpp \
+    connectionmanager.cpp \
+    filemanager.cpp \
+    torrentserver.cpp \
+    trackerclient.cpp \
+    peerwireclient.cpp \
+    ratecontroller.cpp
 
 HEADERS  += mainwindowdownloader.h \
     advio.h \
@@ -55,10 +65,21 @@ HEADERS  += mainwindowdownloader.h \
     url.h \
     utils.h \
     newtask.h \
-    errormessagebox.h   
+    errormessagebox.h \
+    addtorrentdialog.h \
+    metainfo.h \
+    bencodeparser.h \
+    torrentclient.h \
+    connectionmanager.h \
+    filemanager.h \
+    torrentserver.h \
+    trackerclient.h \
+    peerwireclient.h \
+    ratecontroller.h
 
 FORMS    += mainwindowdownloader.ui \
-    newtask.ui
+    newtask.ui \
+    forms/addtorrentform.ui
 
 
 RESOURCES += \

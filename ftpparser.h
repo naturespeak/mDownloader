@@ -28,6 +28,8 @@
 #include <sys/types.h>
 #include <QtGlobal>
 
+#include <QtGlobal>
+
 class FtpParser
 {
 	public:

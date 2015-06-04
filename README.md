@@ -1,6 +1,7 @@
 # mDownloader-for-Windows
-mDownloader for Windows: A Multiple-Threads GUI Download Accelerator Based on Qt, WinSock2 and mytget.
-It is fast, with maximum 99 threads do the downloading job at the same time, takes full advantage of your network resources.
+mDownloader for Windows: A Multiple-Threads GUI Download Accelerator Based on Qt, WinSock2, mytget and the torrent program in Qt Examples.
+It is fast, with maximum 99 threads do the downloading job at the same time, takes full advantage of your network resources when does HTTP/HTTPS/FTP downloading. 
+And it supports BitTorrent protocol.
 
 # How to build
 

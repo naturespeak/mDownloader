@@ -25,6 +25,7 @@
 #define NEWTASK_H
 
 #include <QDialog>
+#include <QProgressDialog>
 
 
 namespace Ui {
@@ -45,10 +46,12 @@ private slots:
     void on_pushButtonSetSaveLocation_clicked();
     void setFileNameSlot(QString);
 
+
 private:
     Ui::NewTask *ui;
     QString m_dir;
     QString m_localFileName;
+
 
 signals:
     void runDownloader(QString);
@@ -56,6 +59,7 @@ signals:
     void setSaveLocation(QString);
     void setDownloadedDirectory(QString);
     void setThreadNum(int);
+
 };
 
 #endif // NEWTASK_H

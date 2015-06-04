@@ -25,6 +25,7 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
+#include <QtGlobal>
 #include <sys/types.h>
 #include <QtGlobal>
 

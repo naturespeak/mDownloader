@@ -694,7 +694,7 @@ Downloader::file_download(void)
     }
     cout<<"Begin to download: "
        <<(task.get_local_file() ? task.get_local_file() : task.get_file())<<endl;
-    char buf[6];
+    char buf[20];
     double time = get_current_time();
     convert_size(buf, task.get_file_size());
     cout<<"Filesize: "<<buf<<endl;

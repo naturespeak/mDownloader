@@ -24,6 +24,8 @@
 #ifndef _PROGRESSBAR_H
 #define _PROGRESSBAR_H
 
+#include <QtGlobal>
+
 #include <sys/types.h>
 #include <QtGlobal>
 

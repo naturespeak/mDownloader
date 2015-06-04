@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include <QFileDialog>
 #include <QDir>
+#include <QSettings>
 #include <QUuid>
+
 
 #include "newtask.h"
 #include "ui_newtask.h"
@@ -79,6 +81,7 @@ void NewTask::on_pushButtonSetSaveLocation_clicked()
     m_dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::homePath(), QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
     ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_dir + "\\" + ui->lineEditFileName->text()));
 }
+
 
 
 
