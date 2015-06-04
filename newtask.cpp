@@ -40,7 +40,7 @@ NewTask::NewTask(QWidget *parent) :
     ui->setupUi(this);
 
     m_dir = QDir::toNativeSeparators(QDir::homePath());
-    ui->lineEditUrl->setText("Paste or input the URL of the file you want to download here.");
+    ui->lineEditUrl->setText(tr("Paste or input the URL of the file you want to download here."));
     ui->lineEditSaveLocation->setText(m_dir + "\\" + ui->lineEditFileName->text());
     ui->spinBoxThreadNum->setMinimum(1);
     ui->spinBoxThreadNum->setValue(1);

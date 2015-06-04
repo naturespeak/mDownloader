@@ -27,6 +27,7 @@
 #include <QtGlobal>
 
 #include <sys/types.h>
+#include <QtGlobal>
 
 #define MINIMUM_SCREEN_WIDTH 45 // the minimum screen width 
 #define DEFAULT_SCREEN_WIDTH 80 // the default screen width when can not get the screen width

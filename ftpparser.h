@@ -26,6 +26,7 @@
 #define _FTPPARSER_H
 
 #include <sys/types.h>
+#include <QtGlobal>
 
 #include <QtGlobal>
 

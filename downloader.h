@@ -41,7 +41,6 @@ using namespace std;
 class Downloader: public QThread
 {
     Q_OBJECT
-
 	public:
         Downloader(QWidget *parent=0);
 		~Downloader(void);

@@ -29,7 +29,7 @@
 #ifndef _ADVIO_H
 #define _ADVIO_H
 
-#define MAXLONG 2147483647 // 2G
+//#define MAXLONG 2147483647 // 2G
 #define BUFSIZE 1024
 
 #include <cassert>

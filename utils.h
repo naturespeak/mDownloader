@@ -27,6 +27,7 @@
 
 #include <QtGlobal>
 #include <sys/types.h>
+#include <QtGlobal>
 
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
 // for international

@@ -32,6 +32,7 @@ ErrorMessageBox::ErrorMessageBox(QObject *parent) :
 void ErrorMessageBox::DisplayError(QString errorMsg)
 {
     QMessageBox msgBox;
+    msgBox.setWindowTitle(tr("mDownloader"));
     msgBox.setText(errorMsg);
     msgBox.exec();
 }

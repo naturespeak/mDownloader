@@ -472,7 +472,7 @@ Downloader::save_temp_file_exit(void)
     delete tempFile;
 
     is_downloading = false;
-    QString inforMsg = "Downloading paused.";
+    QString inforMsg = tr("Downloading paused.");
     emit errorHappened(inforMsg);
     emit done();
     return 0;
@@ -687,7 +687,7 @@ Downloader::file_download(void)
     init_local_file_name();
     if(file_exist(localPath)){
         cout<<"File already exist: "<<localPath<<endl;
-        errorMsg = QString("The file already exists: ");
+        errorMsg = QString(tr("The file already exists: "));
         errorMsg += QDir::toNativeSeparators(localPath);
         emit errorHappened(errorMsg);
         return 0;
@@ -810,7 +810,7 @@ Downloader::file_download(void)
         cerr << "Rename succeed." << endl;
         QFile downloadedFile(localPath);
 
-        if (!sigint_received && !downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
+        if (!downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
         {
             cerr<<"Resize the downloaed file failed"<<endl;
             emit errorHappened(QString("Resize the downloaed file failed"));
@@ -823,7 +823,7 @@ Downloader::file_download(void)
     emit set_GuiProgressBarValue(100);
 
     cout<< endl << "Download successfully in "<<buf<<endl;
-    errorMsg = QString("Download successfully in ");
+    errorMsg = QString(tr("Download successfully in "));
     errorMsg += QString(buf);
     emit errorHappened(errorMsg);
     emit done();
@@ -838,7 +838,7 @@ Downloader::run(void)
     ret = init_task();  // Maybe we could put this init_task() function into the class Task?
     if(ret < 0){
         cerr<<"Can not get the info of the file "<<endl;
-        emit errorHappened(QString("Can not get the info of the file "));
+        emit errorHappened(QString(tr("Can not get the info of the file ")));
 
         return;
     }

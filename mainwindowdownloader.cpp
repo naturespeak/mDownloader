@@ -125,7 +125,7 @@ void MainWindowDownloader::set_labelRemainingTime(QString remainingTime)
 void MainWindowDownloader::on_error_happens(QString errorMsg)
 {
     // When the downloading succeeds m_has_error_happend should keep to be false.
-    if (!errorMsg.contains("Download successfully in")) {
+    if (!errorMsg.contains(tr("Download successfully in"))) {
         m_has_error_happend = true;
     } else {
         m_has_error_happend = false;
@@ -144,10 +144,10 @@ void MainWindowDownloader::on_pushButtonPause_clicked()
         m_is_downloading_paused = true;
         m_is_downloading_started = true;
         m_is_downloading_finished = true;
-        ui->pushButtonPause->setText("Resume");
+        ui->pushButtonPause->setText(tr("Resume"));
     }else{
         //Resume the task, into state DOWNLOADING
-        ui->pushButtonPause->setText("Pause");
+        ui->pushButtonPause->setText(tr("Pause"));
         emit resumeTask();
         m_is_downloading_paused = false;
         m_is_downloading_finished = false;
@@ -235,13 +235,14 @@ void MainWindowDownloader::on_downloading_started(QString)
 void MainWindowDownloader::on_pushButtonAbout_clicked()
 {
     QString about;
-    about = "mDownloader: A GUI download accelerator.";
+    about = tr("mDownloader: A GUI download accelerator.");
     about += QChar::LineSeparator;
-    about += "Version: 1.0.1Build005.";
+    about += tr("Version: 1.0.1Build005.");
     about += QChar::LineSeparator;
-    about += "Written by Chuan Qin. Email: qc2105@qq.com";
+    about += tr("Written by Chuan Qin. Email: qc2105@qq.com");
     about += QChar::LineSeparator;
-    about += "It is based on Qt and Mytget, and licensed under GPL.";
+    about += tr("It is based on Qt and Mytget, and licensed under GPL.");
+    msgBox.setWindowTitle(tr("mDownloader"));
     msgBox.setText(about);
     msgBox.exec();
 }

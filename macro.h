@@ -64,4 +64,6 @@
 #define FILE_BUFFER_SIZE 1024*1024
 #define MIN_BUFFER_LEFT 1024
 
+const int readingBlockSize = 8192;
+
 #endif // _MACRO_H

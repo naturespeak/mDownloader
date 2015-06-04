@@ -25,6 +25,7 @@
 #define _TASK_H
 
 #include <sys/types.h>
+#include <QtGlobal>
 #include <stdio.h>
 
 #include <QtGlobal>

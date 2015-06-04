@@ -391,7 +391,8 @@ Http::get_header(const char *attr_name)
 	return response.get_attr(attr_name);
 };
 
-qint64 Http::get_file_size()
+qint64
+Http::get_file_size()
 {
 	return fileSize;
 };
