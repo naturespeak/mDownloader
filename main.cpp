@@ -45,30 +45,6 @@ using namespace std;
 #	include <openssl/ssl.h>
 #endif
 
-#define TEST_MODE 1
-
-#ifdef TEST_MODE
-int main(int argc, char *argv[])
-{
-    WSADATA     wsaData;
-    WSAStartup(0x0202, &wsaData);
-
-#ifdef HAVE_SSL
-    SSL_load_error_strings();
-    SSLeay_add_ssl_algorithms();
-#endif
-
-    QCoreApplication a(argc, argv);
-
-
-    Downloader downloader;
-
-    downloader.setTestMode(true);
-    downloader.test("http://192.168.1.211/test.tar.bz2");
-
-    return a.exec();
-}
-#else
 int main(int argc, char *argv[])
 {
     WSADATA     wsaData;
@@ -132,4 +108,4 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
-#endif
+

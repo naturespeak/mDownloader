@@ -41,7 +41,6 @@ using namespace std;
 class Downloader: public QThread
 {
     Q_OBJECT
-    QThread hashWorkerThread;
 	public:
         Downloader(QWidget *parent=0);
 		~Downloader(void);
@@ -52,8 +51,6 @@ class Downloader: public QThread
 	public:
         static int download_thread(Downloader *downloader, QThread *ptr_thread);
         int self(QThread *);
-        void test(QString url);
-        void setTestMode(bool val);
 
     public slots:
         void runMyself(QString);
@@ -62,9 +59,6 @@ class Downloader: public QThread
         void setLocalFileName(QString);
         void quit(void);
         void setThreadNum(int);
-
-    private slots:
-        void setHash(QString);
 
     signals:
         void begin(Downloader *downloader, QThread *ptr_thread);
@@ -77,7 +71,6 @@ class Downloader: public QThread
         void set_GuiLabelRemainingTime(QString);
         void errorHappened(QString);
         void done();
-        void operate(QString FileName, QString HashAlgorithm);
 
 	private:
         int init_plugin(void);
@@ -106,8 +99,6 @@ class Downloader: public QThread
         bool is_dirSetted;
         bool sigint_received;
         bool is_downloading;
-        QString fileHash;
-        bool is_test_mode;
 };
 
 class DownloadWorker : public QObject

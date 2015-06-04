@@ -1,6 +1,7 @@
 #include "hashworker.h"
-#include "macro.h"
+#include "../../macro.h"
 //#include <QDateTime>
+#include <QDebug>
 
 HashWorker::HashWorker(QObject *parent) :
     QObject(parent),
