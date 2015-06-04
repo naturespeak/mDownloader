@@ -12,6 +12,7 @@
 
 #define TEST_HASH "3aced4e6e5740c085d743aa2d042c6a4"
 #define TEST_URL "192.168.1.211/test.tar.bz2"
+#define TEMP_FILE "test.test"
 
 class TestDownloader : public QObject
 {
@@ -23,8 +24,10 @@ public:
     QThread hashWorkerThread;
 
 private Q_SLOTS:
+    void initTestCase();
     void testCase1_data();
     void testCase1();
+    void init();
 
 signals:
     void operate(QString, QString);
@@ -48,6 +51,7 @@ TestDownloader::TestDownloader()
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
     #endif
+    m_hash = QString("");
 }
 
 TestDownloader::~TestDownloader()
@@ -57,12 +61,26 @@ TestDownloader::~TestDownloader()
 
 void TestDownloader::on_done()
 {
-    emit operate("test.test", "Md5");
+    emit operate(TEMP_FILE, "Md5");
 }
 
 void TestDownloader::setHash(QString hashVal)
 {
+    qDebug() << "setHash called: " << hashVal;
     m_hash = hashVal;
+}
+
+void TestDownloader::initTestCase()
+{
+    QFile file(TEMP_FILE);
+    file.remove();
+    QCOMPARE(file.exists(), false);
+}
+
+void TestDownloader::init()
+{
+    QFile file(TEMP_FILE);
+    QCOMPARE(file.exists(), false);
 }
 
 void TestDownloader::testCase1_data()
@@ -75,31 +93,32 @@ void TestDownloader::testCase1_data()
     QString http_qstr = QString("http://") + QString(TEST_URL);
     QString ftp_qstr = QString("ftp://") + QString(TEST_URL);
 
-    QTest::newRow("https_1_thread")  << https_qstr    << "1"  << TEST_HASH;
-    QTest::newRow("http_1_thread")   << http_qstr     << "1"  << TEST_HASH;
-    QTest::newRow("ftp_1_thread")    << ftp_qstr      << "1"  << TEST_HASH;
+    for(int i = 1; i < 100; i++)
+    {
+        QString nThreads;
+        nThreads.setNum(i);
 
-    QTest::newRow("https_11_threads")  << https_qstr    << "11"  << TEST_HASH;
-    QTest::newRow("http_11_threads")   << http_qstr     << "11"  << TEST_HASH;
-    QTest::newRow("ftp_11_threads")    << ftp_qstr      << "11"  << TEST_HASH;
+        QString https_string = QString("https_") + nThreads + QString("_thread");
+        QString http_string = QString("http_") + nThreads + QString("_thread");
+        QString ftp_string = QString("ftp_") + nThreads + QString("_thread");
 
-    QTest::newRow("https_10_threads")  << https_qstr    << "10"  << TEST_HASH;
-    QTest::newRow("http_10_threads")   << http_qstr     << "10"  << TEST_HASH;
-    QTest::newRow("ftp_10_threads")    << ftp_qstr      << "10"  << TEST_HASH;
+        QTest::newRow(https_string.toStdString().c_str()) << https_qstr    << nThreads  << TEST_HASH;
+        QTest::newRow(http_string.toStdString().c_str()) << http_qstr     << nThreads  << TEST_HASH;
+        QTest::newRow(ftp_string.toStdString().c_str()) << ftp_qstr      << nThreads  << TEST_HASH;
+    }
 }
 
 void TestDownloader::testCase1()
 {
+    m_hash = QString("");
+
     QFETCH(QString, URLVal);
     QFETCH(QString, nThreads);
     QFETCH(QString, hashVal);
 
-    m_hash = QString("");
-
-    ::remove("test.test");
     dloader = new Downloader();
     dloader->setLocalDirectory(QDir::currentPath());
-    dloader->setLocalFileName("test.test");
+    dloader->setLocalFileName(TEMP_FILE);
     dloader->setThreadNum(nThreads.toInt());
     connect(dloader, SIGNAL(done()), this, SLOT(on_done()));
 
@@ -109,7 +128,7 @@ void TestDownloader::testCase1()
     worker->moveToThread(&hashWorkerThread);
     connect(&hashWorkerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
     connect(this, SIGNAL(operate(QString,QString)), worker, SLOT(doHashWork(QString,QString)));
-    connect(worker, SIGNAL(resultReady(QString)), this, SLOT(setHash(QString)));
+    connect(worker, SIGNAL(resultReady(QString)), this, SLOT(setHash(QString)), Qt::BlockingQueuedConnection);
     hashWorkerThread.start();
 
     QSignalSpy spy_on_worker(worker, SIGNAL(resultReady(QString)));
@@ -117,11 +136,14 @@ void TestDownloader::testCase1()
     {
         QTest::qWait(200);
     }
-    QVERIFY2(m_hash == QString(hashVal), "Failed: hash not equal!");
+
+    worker->removeFile();
+
+    hashWorkerThread.terminate();
     delete worker;
     delete dloader;
-    hashWorkerThread.terminate();
-    QTest::qWait(500);
+
+    QCOMPARE(m_hash , QString(hashVal));
 }
 
 

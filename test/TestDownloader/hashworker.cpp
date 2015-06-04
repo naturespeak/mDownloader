@@ -9,18 +9,34 @@ HashWorker::HashWorker(QObject *parent) :
 {
 }
 
+void HashWorker::removeFile()
+{
+    m_mutex.lock();
+    m_file->remove();
+    m_mutex.unlock();
+}
+
 void HashWorker::doHashWork(QString FileName, QString HashAlgorithm)
 {
+    m_mutex.lock();
     QByteArray resultByteArray;
     QByteArray hashHexByteArray;
     QString resultQString = "";
-//    QString resultQString = QDateTime::currentDateTime().toString(QString("[hh:mm:ss, ddd MMMM d yyyy]\t")) + "["
-//            + FileName + "]" + "\t";
     QCryptographicHash *hash = NULL;
 
-    QFile *file = new QFile(FileName, this);
+    m_file = new QFile(FileName, this);
 
-    if(file->open(QIODevice::ReadOnly)) {   //ToDo: what if the file is a directory?
+    if (!m_file->exists() || m_file->size() == 0)
+    {
+        emit resultReady("File doesn't exist or is empty");
+        return;
+    }
+    else
+    {
+        qDebug() << m_file->size();
+    }
+
+    if(m_file->open(QIODevice::ReadOnly)) {   //ToDo: what if the file is a directory?
         if (HashAlgorithm == "Md5")
         {
             hash = new QCryptographicHash(QCryptographicHash::Md5);
@@ -36,34 +52,25 @@ void HashWorker::doHashWork(QString FileName, QString HashAlgorithm)
         }
 #endif
         int steps = 0;
-        while (!file->atEnd()) {
-            hash->addData(file->read(readingBlockSize));
+        while (!m_file->atEnd()) {
+            hash->addData(m_file->read(readingBlockSize));
             m_currentProgress += readingBlockSize;
             emit currentProgress(++steps);
         }
-        emit currentProgress(file->size()/readingBlockSize);
+        emit currentProgress(m_file->size()/readingBlockSize);
         resultByteArray = hash->result();
-        delete hash;
         hashHexByteArray = resultByteArray.toHex();
 
-//        if (HashAlgorithm == "Md5")
-//        {
-//            resultQString += "[MD5]\t";
-//        }
-//        else if (HashAlgorithm == "Sha1")
-//        {
-//            resultQString += "[SHA1]\t";
-//        }
-//        else if (HashAlgorithm == "Sha256")
-//        {
-//            resultQString += "[SHA256]\t";
-//        }
-//        resultQString += "[";
         resultQString += hashHexByteArray.data();
-//        resultQString += "]";
+
     }else {
-        // file open error
+        resultQString += QString("file open error");
     }
 
+    delete hash;
+    if (resultQString.isEmpty()) {
+        resultQString += QString("Error, empty resultQString");
+    }
     emit resultReady(resultQString);
+    m_mutex.unlock();
 }

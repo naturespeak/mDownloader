@@ -5,6 +5,7 @@
 #include <QCryptographicHash>
 #include <QString>
 #include <QFile>
+#include <QMutex>
 
 class HashWorker : public QObject
 {
@@ -15,6 +16,7 @@ public:
 
 public slots:
     void doHashWork(QString FileName, QString HashAlgorithm);
+    void removeFile();
 
 signals:
     void resultReady(QString result);
@@ -22,6 +24,8 @@ signals:
 
 private:
     int m_currentProgress;
+    QFile *m_file;
+    QMutex m_mutex;
 };
 
 #endif // HASHWORKER_H
