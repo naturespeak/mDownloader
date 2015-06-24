@@ -57,26 +57,26 @@ Http::Http()
 	request.set_attr("User-Agent", USER_AGENT);
 	//request.set_attr("Range", "bytes=0-"); error when the fiesize is zero
 	request.set_attr("Accept", "*/*");
-};
+}
 
 void
 Http::set_timeout(long timeout)
 {
 	this->timeout = timeout;
-};
+}
 
 void
 Http::set_log(void(*log)(const char *, ...))
 {
 	this->log = log;
-};
+}
 
 #ifdef HAVE_SSL
 void
 Http::set_use_ssl(bool use)
 {
 	this->useSSL = use;
-};
+}
 #endif
 
 int
@@ -114,60 +114,13 @@ Http::connect(const char *host, int port)
 	set_host(host, port);
 
 	return 0;
-};
-
-int
-Http::connect(const TcpSockAddr& sock)
-{
-	int ret;
-
-	delete conn; conn = NULL;
-	conn = NULL;
-	log(_("Connecting...\n"));
-	conn = TcpConnector::connect(sock, ret, timeout);
-	if(!conn) return ret;
-#ifdef HAVE_SSL
-	if(useSSL){
-		conn->set_use_ssl(useSSL);
-		if(conn->ssl_connect() < 0){
-			delete conn; conn = NULL;
-			return E_SSL_CONN;
-		}
-	}
-#endif
-
-	conn->get_remote_addr(remote);
-	return 0;
-};
-
-int
-Http::connect()
-{
-	int ret;
-	
-	delete conn; conn = NULL;
-	conn = NULL;
-	log(_("Connecting...\n"));
-	conn = TcpConnector::connect(remote, ret, timeout);
-	if(!conn) return ret;
-#ifdef HAVE_SSL
-	if(useSSL){
-		conn->set_use_ssl(useSSL);
-		if(conn->ssl_connect() < 0){
-			delete conn; conn = NULL;
-			return E_SSL_CONN;
-		}
-	}
-#endif
-
-	return 0;
-};
+}
 
 int 
 Http::header(const char *attrName, const char *attrValue)
 {
 	return request.set_attr(attrName, attrValue);
-};
+}
 
 #if WIN32
 #define snprintf sprintf_s
@@ -184,7 +137,7 @@ Http::auth(const char *user, const char *password)
 	delete[] base64;
 
 	return request.set_attr("Authorization", buf);
-};
+}
 
 int
 Http::proxy_auth(const char *user, const char *password)
@@ -197,7 +150,7 @@ Http::proxy_auth(const char *user, const char *password)
 	delete[] base64;
 
 	return request.set_attr("Proxy-Authorization", buf);
-};
+}
 
 int
 Http::set_range(qint64 start, qint64 end)
@@ -210,7 +163,7 @@ Http::set_range(qint64 start, qint64 end)
 	}
 
 	return request.set_attr("Range", buf);
-};
+}
 
 int
 Http::set_host(const char *host, int port)
@@ -239,7 +192,7 @@ Http::set_host(const char *host, int port)
 	}
 
 	return request.set_attr("Host", buf);
-};
+}
 
 int
 Http::send_head()
@@ -260,7 +213,7 @@ Http::send_head()
 	log("\r\n");
 
 	return 0;
-};
+}
 
 int
 Http::head(const char *url)
@@ -275,7 +228,7 @@ Http::head(const char *url)
 	RETURN_IF_FAILED(send_head());
 
 	return 0;
-};
+}
 
 int
 Http::get(const char *url)
@@ -292,14 +245,14 @@ Http::get(const char *url)
 	conn->set_tos();
 
 	return 0;
-};
+}
 
 // not implement
 #if 0
 int
 Http::post(const char *url)
 {
-};
+}
 #endif
 
 /* the normal head just like this 
@@ -383,25 +336,25 @@ Http::parse_header()
 	}
 
 	return 0;
-}; // end of parse_header;
+} // end of parse_header;
 
 const char*
 Http::get_header(const char *attr_name)
 {
 	return response.get_attr(attr_name);
-};
+}
 
 qint64
 Http::get_file_size()
 {
 	return fileSize;
-};
+}
 
 int
 Http::get_status_code()
 {
 	return statusCode;
-};
+}
 
 bool
 Http::accept_ranges()
@@ -412,7 +365,7 @@ Http::accept_ranges()
 	}
 
 	return false;
-};
+}
 
 int
 Http::read_data(char *buffer, int maxsize)
@@ -452,10 +405,10 @@ _read_data_again:
 	}
 
 	return ret;
-};
+}
 
 int
 Http::data_ends()
 { // not very reasonable
 	return chunkedSize == 0 ? 0 : -1;
-};
+}

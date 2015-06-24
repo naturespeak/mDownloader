@@ -10,9 +10,10 @@
 #	include <openssl/ssl.h>
 #endif
 
-#define TEST_HASH "3aced4e6e5740c085d743aa2d042c6a4"
-#define TEST_URL "192.168.1.211/test.tar.bz2"
+#define TEST_HASH "6f2c0ff4e3cab35bb49312ce88e1a690"
+#define TEST_URL "10.231.14.85/uploads/burpsuite_free_v1.6.jar"
 #define TEMP_FILE "test.test"
+#define REPEAT_TIMES 2
 
 class TestDownloader : public QObject
 {
@@ -93,7 +94,7 @@ void TestDownloader::testCase1_data()
     QString http_qstr = QString("http://") + QString(TEST_URL);
     QString ftp_qstr = QString("ftp://") + QString(TEST_URL);
 
-    for(int i = 1; i < 100; i++)
+    for(int i = 1; i < REPEAT_TIMES; i++)
     {
         QString nThreads;
         nThreads.setNum(i);

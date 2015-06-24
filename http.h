@@ -55,8 +55,6 @@ class Http
 
 		// connect to the http server
 		int connect(const char *host, int port);
-		int connect(const TcpSockAddr &addr);
-		int connect();
 
 		// add or mofify header info
 		int header(const char *attrName, const char *attrValue);

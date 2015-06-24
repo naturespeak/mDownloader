@@ -45,7 +45,6 @@ class Ftp
 		~Ftp();
 
 		int connect(const char *addrstr, int port);
-		int connect(const TcpSockAddr& sock); 
 		int reconnect();
 
 		// the commands return 0 if successfully

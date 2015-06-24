@@ -50,13 +50,13 @@ Ftp::Ftp()
 	mode = PASV;
 	stateLine[0] = 0;
 	log = &default_log;
-};
+}
 
 Ftp::~Ftp()
 {
 	delete ctrlConn;
 	delete dataConn;
-};
+}
 
 int
 Ftp::connect(const char *addrstr, int port)
@@ -75,21 +75,7 @@ Ftp::connect(const char *addrstr, int port)
 	ctrlConn->get_remote_addr(remoteAddr);
 	ctrlConn->get_local_addr(localAddr);
 	return 0;
-};
-
-int
-Ftp::connect(const TcpSockAddr& sock)
-{
-	int ret;
-
-	log(_("Connecting...\n"));
-	ctrlConn = TcpConnector::connect(sock, ret, timeout);
-	if(!ctrlConn) return ret;
-
-	ctrlConn->get_remote_addr(remoteAddr);
-	ctrlConn->get_local_addr(localAddr);
-	return 0;
-};
+}
 
 int
 Ftp::reconnect()
