@@ -26,6 +26,8 @@
 #define _HTTP_H
 
 #include <sys/types.h>
+#include <QTcpSocket>
+#include <QHostAddress>
 
 #include "advio.h"
 #include "tcp.h"

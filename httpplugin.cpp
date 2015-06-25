@@ -178,7 +178,7 @@ HttpPlugin::get_info(Task *task)
 	}
 
 	return 0;
-};
+}
 
 int
 HttpPlugin::download(Task& task, Block *block)

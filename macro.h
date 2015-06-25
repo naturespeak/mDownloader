@@ -29,9 +29,9 @@
 #  include <config.h>
 #endif
 
-#ifndef HAVE_SSL
-#define HAVE_SSL
-#endif
+//#ifndef HAVE_SSL
+//#define HAVE_SSL
+//#endif
 
 #include <WINSOCK2.H>
 #pragma comment(lib, "ws2_32.lib")
