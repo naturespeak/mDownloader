@@ -48,6 +48,9 @@ using namespace std;
 Http::Http()
 {
 	conn = NULL;
+
+    qSock = new QTcpSocket();
+
 	timeout = 30;
 #ifdef HAVE_SSL
 	useSSL = false;
@@ -57,6 +60,12 @@ Http::Http()
 	request.set_attr("User-Agent", USER_AGENT);
 	//request.set_attr("Range", "bytes=0-"); error when the fiesize is zero
 	request.set_attr("Accept", "*/*");
+}
+
+Http::~Http()
+{
+    delete conn;
+    delete qSock;
 }
 
 void
@@ -83,23 +92,28 @@ int
 Http::connect(const char *host, int port)
 {
     int ret = -30;
-    int rt = -5;
-	Address addr;
+//    int rt = -5;
+//	Address addr;
 
-	delete conn; conn = NULL;
-    log(_("Resolve address...\n"));
-    if(rt = addr.resolve(host, port) < 0)
+//	delete conn; conn = NULL;
+//    log(_("Resolve address...\n"));
+//    if(rt = addr.resolve(host, port) < 0)
+//    {
+//        cerr << "Resolve address failed, rt: " << rt << endl;
+//        return E_RESOLVE;
+//    }
+//	log(_("Connecting...\n"));
+//	conn = TcpConnector::connect(addr, ret, timeout);
+    qSock->connectToHost(QString(host), port);
+    if (!qSock->waitForConnected(timeout * 1000))
     {
-        cerr << "Resolve address failed, rt: " << rt << endl;
-        return E_RESOLVE;
+        return -1;
     }
-	log(_("Connecting...\n"));
-	conn = TcpConnector::connect(addr, ret, timeout);
-    if(!conn)
-    {
-      //cerr <<  " TcpConnector::connect failed, ret: " << ret;
-                return ret;
-    }
+//    if(!conn)
+//    {
+//      //cerr <<  " TcpConnector::connect failed, ret: " << ret;
+//                return ret;
+//    }
 #ifdef HAVE_SSL
 	if(useSSL){
 		conn->set_use_ssl(useSSL);
@@ -110,8 +124,10 @@ Http::connect(const char *host, int port)
 	}
 #endif
 
-	conn->get_remote_addr(remote);
-	set_host(host, port);
+//	conn->get_remote_addr(remote);
+    remoteAddr = qSock->peerAddress();
+
+    set_host(host, port);
 
 	return 0;
 }
@@ -199,17 +215,27 @@ Http::send_head()
 {
 	HeadDataNode *it;
 	int ret;
+    if (qSock->state() == QAbstractSocket::ConnectedState)
+    {
+        cerr << "Send_head() qSock connected" << endl;
+    }
+    else
+    {
+        exit(-1);
+    }
 
     cerr << "EXE enter into send_head()" << endl;
 	for(it = request.head; it != NULL; it = it->next){
 		snprintf(buf, 1024, "%s: %s\r\n", it->attrName, it->attrValue);
         cerr << "buf in send head: " << buf << endl;
-		if((ret=conn->write(buf, timeout)) < 0) return ret;
+        if((ret=qSock->write(buf)) < 0) return ret;
+        qSock->waitForBytesWritten(timeout * 1000);
 		log("%s: %s\r\n", it->attrName, it->attrValue);
 	}
 
 	snprintf(buf, 1024, "\r\n");
-	if((ret=conn->write(buf, timeout)) < 0) return ret;
+    if((ret=qSock->write(buf)) < 0) return ret;
+    qSock->waitForBytesWritten(timeout * 1000);
 	log("\r\n");
 
 	return 0;
@@ -222,7 +248,8 @@ Http::head(const char *url)
 
 	snprintf(buf, 1024, "HEAD %s HTTP/%s\r\n", url, HTTP_VERSION);
 
-	if((ret=conn->write(buf, timeout)) < 0) return ret;
+    if((ret=qSock->write(buf)) < 0) return ret;
+    qSock->waitForBytesWritten(timeout * 1000);
 	log("HEAD %s HTTP/%s\r\n", url, HTTP_VERSION);
 
 	RETURN_IF_FAILED(send_head());
@@ -237,12 +264,13 @@ Http::get(const char *url)
 
     snprintf(buf, 1024, "GET %s HTTP/%s\r\n", url, HTTP_VERSION);
     cerr << "buf to send in get: " << buf << endl;
-	if((ret=conn->write(buf, timeout)) < 0) return ret;
+    if((ret=qSock->write(buf)) < 0) return ret;
+    qSock->waitForBytesWritten(timeout * 1000);
 	log("GET %s HTTP/%s\r\n", url, HTTP_VERSION);
 
     RETURN_IF_FAILED(send_head());
 
-	conn->set_tos();
+    //conn->set_tos();
 
 	return 0;
 }
@@ -273,7 +301,8 @@ Http::parse_header()
 
 	response.remove_all();
 
-	ret = conn->read_line(buf, 1024, timeout);
+    qSock->waitForReadyRead(timeout * 1000);
+    ret = qSock->readLine(buf, 1024);
 	if(ret < 0) return ret;
 	if(ret == 0) return -1;
 	log("%s", buf);
@@ -287,7 +316,8 @@ Http::parse_header()
 	statusCode = atoi(ptr);
 
 	while(1){
-		ret = conn->read_line(buf, 1024, timeout);
+        qSock->waitForReadyRead(timeout * 1000);
+        ret = qSock->readLine(buf, 1024);
 		if(ret < 0) return ret;
 		if(ret == 0) return -1;
 		log("%s", buf);
@@ -379,7 +409,8 @@ Http::read_data(char *buffer, int maxsize)
 			int size;
 			char *ptr;
 _read_data_again:
-			ret = conn->read_line(buf, 1024, timeout);
+            qSock->waitForReadyRead(timeout * 1000);
+            ret = qSock->readLine(buf, 1024);
 			if(ret < 0) return ret;
 			if(ret == 0) return -1;
 			ptr = buf;
@@ -395,7 +426,8 @@ _read_data_again:
 	if(chunkedSize > 0){
 		maxsize = maxsize < chunkedSize ? maxsize : (int)chunkedSize;
 	}
-	ret = conn->read(buffer, maxsize, timeout);
+    qSock->waitForReadyRead(timeout * 1000);
+    ret = qSock->read(buffer, maxsize);
 
 	if(chunkedSize > 0){
 		if(ret <= 0) return -1; // Can not get all of the data

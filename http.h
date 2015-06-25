@@ -44,7 +44,7 @@ class Http
 {
 	public:
 		Http();
-		~Http(){ delete conn; };
+        ~Http();
 
 		// set timeout
 		void set_timeout(long timeout);
@@ -98,6 +98,9 @@ class Http
         static void default_log(const char *, ...){};
 
 	protected:
+        QTcpSocket *qSock;
+        QHostAddress remoteAddr;
+
 		TcpConnection *conn;
 		HeadData request;
 		HeadData response;
