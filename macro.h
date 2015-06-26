@@ -33,9 +33,6 @@
 //#define HAVE_SSL
 //#endif
 
-#include <WINSOCK2.H>
-#pragma comment(lib, "ws2_32.lib")
-
 // #define DEBUG
 
 // ftp passive or active

@@ -59,7 +59,6 @@ IOStream::~IOStream()
 		if(sslCTX) SSL_CTX_free(sslCTX);
 	}
 #endif
-    ::closesocket(fd);
 };
 
 int
@@ -137,116 +136,6 @@ IOStream::ssl_connect(void)
 };
 #endif // HAVE_SSL
 
-int
-IOStream::read(char *buffer, int maxsize, long timeout)
-{
-	fd_set r_fdset;
-	int rc;
-	struct timeval *time_out;
-	struct timeval tmp;
-	if(timeout < 0){ /* block */
-		time_out = NULL;
-	}else{
-		tmp.tv_sec = timeout;
-		tmp.tv_usec = 0;
-		time_out = &tmp;
-	}
-
-	while(1){
-		FD_ZERO(&r_fdset);
-		FD_SET(fd, &r_fdset);
-		switch(select(fd+1, &r_fdset, NULL, NULL, time_out)){
-			case 0:
-				/*timeout*/
-				return E_TIMEOUT;
-			case -1:
-				/*error*/
-				if(errno == EINTR) continue;
-				return -1;
-			default:
-				/*some fd of 0-fd are activated*/
-				if(FD_ISSET(fd, &r_fdset)){
-					while(1){
-#ifdef HAVE_SSL
-						if(useSSL && ssl != NULL){
-							rc = SSL_read(ssl, buffer, maxsize);
-							if(rc > 0){
-								return rc;
-							}else if(rc == 0){ // error or EOF
-								if(SSL_get_error(ssl, rc) == SSL_ERROR_ZERO_RETURN){
-									return 0; // EOF
-								}else{
-									return -1;
-								}
-							}else{ // error
-								return rc;
-							}
-						}
-#endif
-                        if((rc=::recv(fd, buffer, maxsize,0)) < 0){
-							if(errno == EINTR)
-								continue;
-							return -1;
-						}
-						return rc; /*contain EOF and normal return*/
-					}
-				}
-		}
-	}
-};
-	
-int
-IOStream::write(char *buffer, int maxsize, long timeout)
-{
-	fd_set w_fdset;
-	int rc;
-	struct timeval *time_out;
-	struct timeval tmp;
-	if(timeout < 0){ /* block */
-		time_out = NULL;
-	}else{
-		tmp.tv_sec = timeout;
-		tmp.tv_usec = 0;
-		time_out = &tmp;
-	}
-
-
-	while(1){
-		FD_ZERO(&w_fdset);
-		FD_SET(fd, &w_fdset);
-		switch(select(fd+1, NULL, &w_fdset, NULL, time_out)){
-			case 0:
-				/*timeout*/
-				return E_TIMEOUT;
-			case -1:
-				/*error*/
-				if(errno == EINTR) continue;
-				return -1;
-			default:
-				/*some fd of 0-fd are activated*/
-				if(FD_ISSET(fd, &w_fdset)){
-					while(1){
-#ifdef HAVE_SSL
-						if(useSSL && ssl != NULL){
-							if((rc=SSL_write(ssl, buffer, maxsize)) <= 0){
-								return -1;
-							}else{
-								return rc;
-							}
-						}
-#endif
-                        if((rc=::send(fd, buffer, maxsize,0)) < 0){
-							if(errno == EINTR)
-								continue;
-							return -1;
-						}
-						return rc;
-					}
-				}
-		}
-	}
-
-}
 
 /*****************************************************************
  * class BufferStream implement
@@ -285,105 +174,18 @@ BufferStream::set_fd(int infd)
 	return IOStream::set_fd(infd);
 };
 
-int
-BufferStream::write(char *str, long timeout)
-{
-	int n, rc, slen;
-	char *pptr;
-
-	n = strlen(str);
-	slen = n;
-	pptr = str;
-
-	while(n > 0){
-		if((rc=IOStream::write(str, n, timeout)) > 0){
-			n -= rc;
-			pptr += rc;
-		}else
-			return rc;
-	}
-
-	return slen;
-};
-
-int
-BufferStream::read(char *buffer, int maxsize, long timeout)
-{
-	if(count > 0){
-		int min;
-		min = count < maxsize ? count : maxsize;
-		memcpy(buffer, ptr, min);
-		count -= min;
-		ptr += min;
-		return min;
-	}else{
-		return IOStream::read(buffer, maxsize, timeout);
-	}
-};
-
-int
-BufferStream::readc(char *c, long timeout)
-{
-	if(count <= 0){
-		if((count=IOStream::read(buf, BUFSIZE, timeout)) < 0)
-			return count; //error
-		else if(count == 0)
-			return 0; //EOF
-		ptr = buf;
-	}
-
-	*c = *ptr;
-	ptr ++;
-	count --;
-
-	return 1;
-};
-
-int
-BufferStream::read_line(char *line, int maxsize, long timeout)
-{
-	int i, rc;
-	char c;
-	char *pptr;
-
-	pptr = line;
-
-	for(i=1; i<maxsize; i++){
-		if((rc=readc(&c, timeout)) < 0){
-			return rc; //error
-		}else if(rc == 0){ //EOF
-			if(i == 1){//read nothing but EOF
-				return 0;
-			}else{
-				break;
-			}
-		}
-		*pptr = c;
-		pptr ++;
-		if(c == '\n')
-			break;
-	}
-
-	*pptr = '\0';
-
-	if(i == maxsize)
-		return i-1;
-	else
-		return i;
-};
-
 /****************************************************
  * class PluginIO implement
  ****************************************************/
 PluginIO::PluginIO()
 {
 	// do nothing
-};
+}
 
 PluginIO::~PluginIO()
 {
 	// do nothing
-};
+}
 
 int
 PluginIO::read_data(char *buffer, int maxsize)

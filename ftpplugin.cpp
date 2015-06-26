@@ -49,7 +49,7 @@ FtpPlugin::get_info(Task *task)
 	if(ret < 0){
 		return -2;
 	}else if(ret > 0){
-        Sleep(task->get_retryInterval() * 1000);
+        sleep(task->get_retryInterval());
 		return -2;
 	}
 
@@ -139,7 +139,7 @@ FtpPlugin::download(Task &task, Block *block)
 	if(ret < 0){
 		return -2;
 	}else if(ret > 0){
-        Sleep(task.get_retryInterval() * 1000);
+        sleep(task.get_retryInterval());
 		return -2;
 	}
 
@@ -175,7 +175,7 @@ _re_retr:
 
 	// wait the server to schedule
 	block->state = WAIT;
-    Sleep(500);
+    msleep(500);
 	if(block->state == WAKEUP) goto _re_retr;
 	block->state = EXIT;
 	return 0;
@@ -192,7 +192,7 @@ FtpPlugin::relogin(Ftp *ftp, Task &task)
 	if(ret < 0){
 		return ret;
 	}else if(ret > 0){
-        Sleep(task.get_retryInterval() * 1000);
+        sleep(task.get_retryInterval());
 		return -1;
 	}
 
@@ -310,7 +310,7 @@ _ftp_get_dir_list_conn:
 	if(ret < 0){
 		goto _ftp_get_dir_list_conn;
 	}else if(ret > 0){
-        Sleep(task.get_retryInterval() * 1000);
+        sleep(task.get_retryInterval());
 		goto _ftp_get_dir_list_conn;
 	}
 	// get absolute directory

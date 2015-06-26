@@ -28,7 +28,6 @@
 #include "utils.h"
 #include "url.h"
 #include "advio.h"
-#include "tcp.h"
 #include "ftp.h"
 #include "http.h"
 #include "plugin.h"

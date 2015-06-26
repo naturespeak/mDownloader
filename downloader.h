@@ -84,7 +84,6 @@ class Downloader: public QThread
 		int schedule(void);
 		int save_temp_file_exit(void);
 
-		int directory_download(void);
 		int file_download(void);
         void catch_ctrl_c(int signo);
 

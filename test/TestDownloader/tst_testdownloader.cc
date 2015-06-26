@@ -13,7 +13,7 @@
 #define TEST_HASH "6f2c0ff4e3cab35bb49312ce88e1a690"
 #define TEST_URL "10.231.14.85/uploads/burpsuite_free_v1.6.jar"
 #define TEMP_FILE "test.test"
-#define REPEAT_TIMES 3
+#define REPEAT_TIMES 5
 
 class TestDownloader : public QObject
 {
@@ -45,9 +45,6 @@ private:
 
 TestDownloader::TestDownloader()
 {
-    WSADATA     wsaData;
-    WSAStartup(0x0202, &wsaData);
-
     #ifdef HAVE_SSL
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
@@ -57,7 +54,6 @@ TestDownloader::TestDownloader()
 
 TestDownloader::~TestDownloader()
 {
-    WSACleanup();
 }
 
 void TestDownloader::on_done()

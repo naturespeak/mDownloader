@@ -28,7 +28,6 @@ using namespace std;
 
 #include "http.h"
 #include "utils.h"
-//#include "tcp.h"
 #include "macro.h"
 #include "header.h"
 

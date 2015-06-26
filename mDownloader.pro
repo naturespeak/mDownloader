@@ -28,7 +28,6 @@ SOURCES += main.cpp\
     progressbar.cpp \
     proxy.cpp \
     task.cpp \
-    tcp.cpp \
     url.cpp \
     utils.cpp \
     newtask.cpp \
@@ -61,7 +60,6 @@ HEADERS  += mainwindowdownloader.h \
     progressbar.h \
     proxy.h \
     task.h \
-    tcp.h \
     url.h \
     utils.h \
     newtask.h \

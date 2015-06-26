@@ -27,9 +27,10 @@
 
 #include "plugin.h"
 #include "task.h"
+#include <QThread>
 
 class HttpPlugin
-	: public Plugin
+    : public Plugin, public QThread
 {
 	public:
 		int get_info(Task *task);

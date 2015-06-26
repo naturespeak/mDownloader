@@ -29,7 +29,6 @@ SOURCES += tst_testdownloader.cc \
     ../../progressbar.cpp \
     ../../proxy.cpp \
     ../../task.cpp \
-    ../../tcp.cpp \
     ../../url.cpp \
     ../../utils.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
@@ -52,7 +51,6 @@ HEADERS += \
     ../../progressbar.h \
     ../../proxy.h \
     ../../task.h \
-    ../../tcp.h \
     ../../url.h \
     ../../utils.h
 

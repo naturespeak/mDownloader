@@ -36,20 +36,14 @@ using namespace std;
 #include <QDesktopWidget>
 #include <QTranslator>
 
-#ifdef min()
-#undef min()
 #include <QLibraryInfo>
-#endif
 
 #ifdef HAVE_SSL
 #	include <openssl/ssl.h>
 #endif
 
 int main(int argc, char *argv[])
-{
-    WSADATA     wsaData;
-    WSAStartup(0x0202, &wsaData);
-
+{   
 #ifdef HAVE_SSL
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();

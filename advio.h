@@ -60,9 +60,6 @@ public:
     int open(const char *file, int flag=O_RDWR|O_CREAT, int mode=00644);
     int close();
 
-    /* when timeout == -1, it is blocked */
-    int read(char *buffer, int maxsize, long timeout=-1);
-    int write(char *buffer, int maxsize, long timeout=-1);
 
 #ifdef HAVE_SSL
     void set_use_ssl(bool use);
@@ -90,11 +87,6 @@ public:
 
     int set_fd(int infd);
 
-    // the below functions have buffer supported
-    int readc(char *c, long timeout=-1);
-    int read(char *buffer, int maxsize, long timeout=-1);
-    int write(char *str, long timeout=-1);
-    int read_line(char *line, int maxsize,long timeout=-1);
 
 protected:
     char buf[BUFSIZE];

@@ -30,7 +30,6 @@
 #include <QHostAddress>
 
 #include "advio.h"
-#include "tcp.h"
 #include "header.h"
 #include "macro.h"
 		

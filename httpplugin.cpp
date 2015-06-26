@@ -261,7 +261,7 @@ _re_retr:
 	}
 
 	block->state = WAIT;
-    Sleep(500);
+    msleep(500);
 	if(block->state == WAKEUP) goto _re_retr;
 	block->state = EXIT;
 	return 0;

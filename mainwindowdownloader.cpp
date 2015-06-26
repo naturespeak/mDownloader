@@ -38,9 +38,6 @@
 #include "utils.h"
 #include "addtorrentdialog.h"
 
-#include <WINSOCK2.H>
-#pragma comment(lib, "ws2_32.lib")
-
 #include <iostream>
 using std::cerr;
 using std::endl;
@@ -190,16 +187,13 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
             quitDialog->exec();
         quitDialog->deleteLater();
         quitDialog = 0;
-        WSACleanup();
     }
     else
     {
         if (m_is_downloading_started == false && m_is_downloading_finished == true && m_is_downloading_paused == true) {        // Not downloading
             event->accept();
-            WSACleanup();
         }else if (m_is_downloading_started == true && m_is_downloading_finished == true && m_is_downloading_paused == true) {   // Paused
             event->accept();
-            WSACleanup();
         }else if (m_is_downloading_started == true && m_is_downloading_finished == false && m_is_downloading_paused == false) { // Downloading
             msgBox.setText("Downloading is in progress. Please press Pause first.");
             msgBox.exec();
