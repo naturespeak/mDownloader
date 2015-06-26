@@ -26,6 +26,9 @@
 #define _FTP_H
 
 #include <sys/types.h>
+#include <QTcpSocket>
+#include <QTcpServer>
+#include <QHostAddress>
 
 #include "tcp.h"
 #include "macro.h"
@@ -93,7 +96,13 @@ class Ftp
         static void default_log(const char *, ...){};
 
 	protected:
-		TcpConnection *ctrlConn;
+        QTcpSocket *qCtrLSock;
+        QTcpSocket *qDataSock;
+        QHostAddress qRemoteAddr;
+        QHostAddress qLocalAddr;
+        int m_port;
+
+        TcpConnection *ctrlConn;
 		TcpConnection *dataConn;
 		TcpSockAddr remoteAddr;
 		TcpSockAddr localAddr;
