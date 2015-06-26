@@ -28,7 +28,7 @@ using namespace std;
 
 #include "http.h"
 #include "utils.h"
-#include "tcp.h"
+//#include "tcp.h"
 #include "macro.h"
 #include "header.h"
 
@@ -47,8 +47,6 @@ using namespace std;
 
 Http::Http()
 {
-	conn = NULL;
-
     qSock = new QTcpSocket();
 
 	timeout = 30;
@@ -64,7 +62,6 @@ Http::Http()
 
 Http::~Http()
 {
-    delete conn;
     delete qSock;
 }
 
@@ -91,29 +88,12 @@ Http::set_use_ssl(bool use)
 int
 Http::connect(const char *host, int port)
 {
-    int ret = -30;
-//    int rt = -5;
-//	Address addr;
-
-//	delete conn; conn = NULL;
-//    log(_("Resolve address...\n"));
-//    if(rt = addr.resolve(host, port) < 0)
-//    {
-//        cerr << "Resolve address failed, rt: " << rt << endl;
-//        return E_RESOLVE;
-//    }
-//	log(_("Connecting...\n"));
-//	conn = TcpConnector::connect(addr, ret, timeout);
     qSock->connectToHost(QString(host), port);
     if (!qSock->waitForConnected(timeout * 1000))
     {
         return -1;
     }
-//    if(!conn)
-//    {
-//      //cerr <<  " TcpConnector::connect failed, ret: " << ret;
-//                return ret;
-//    }
+
 #ifdef HAVE_SSL
 	if(useSSL){
 		conn->set_use_ssl(useSSL);
@@ -124,7 +104,6 @@ Http::connect(const char *host, int port)
 	}
 #endif
 
-//	conn->get_remote_addr(remote);
     remoteAddr = qSock->peerAddress();
 
     set_host(host, port);
@@ -269,8 +248,6 @@ Http::get(const char *url)
 	log("GET %s HTTP/%s\r\n", url, HTTP_VERSION);
 
     RETURN_IF_FAILED(send_head());
-
-    //conn->set_tos();
 
 	return 0;
 }

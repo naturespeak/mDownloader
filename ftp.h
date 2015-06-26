@@ -30,7 +30,8 @@
 #include <QTcpServer>
 #include <QHostAddress>
 
-#include "tcp.h"
+#define INET6_ADDRSTRLEN 65
+
 #include "macro.h"
 #include "advio.h"
 
@@ -41,7 +42,7 @@
 
 
 class Ftp
-	: public PluginIO
+    : public PluginIO
 {
 	public:
 		Ftp();
@@ -102,10 +103,6 @@ class Ftp
         QHostAddress qLocalAddr;
         int m_port;
 
-        TcpConnection *ctrlConn;
-		TcpConnection *dataConn;
-		TcpSockAddr remoteAddr;
-		TcpSockAddr localAddr;
 		char stateLine[1024];
 		long timeout;
 		int mode; //active or passive

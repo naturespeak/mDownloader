@@ -101,10 +101,9 @@ class Http
         QTcpSocket *qSock;
         QHostAddress remoteAddr;
 
-		TcpConnection *conn;
 		HeadData request;
 		HeadData response;
-		TcpSockAddr remote;
+
 		int statusCode;
 		long timeout;
 		char buf[1024];

@@ -29,7 +29,6 @@
 #include <stdio.h>
 
 #include "ftp.h"
-#include "tcp.h"
 #include "advio.h"
 #include "utils.h"
 #include "debug.h"
@@ -44,9 +43,6 @@
 
 Ftp::Ftp()
 {
-	ctrlConn = NULL;
-	dataConn = NULL;
-
     qCtrLSock = new QTcpSocket(0);
     qDataSock = new QTcpSocket(0);
 
@@ -58,8 +54,6 @@ Ftp::Ftp()
 
 Ftp::~Ftp()
 {
-	delete ctrlConn;
-	delete dataConn;
     delete qCtrLSock;
     delete qDataSock;
 }
@@ -67,25 +61,14 @@ Ftp::~Ftp()
 int
 Ftp::connect(const char *addrstr, int port)
 {
-//	assert(addrstr);
-
-//	Address addr;
-//	int ret;
-
 	log(_("Resolve address...\n"));
-//	if(addr.resolve(addrstr, port) < 0) return E_RESOLVE;
 	log(_("Connecting...\n"));
+
     qCtrLSock->connectToHost(QString(addrstr), port);
     if (!qCtrLSock->waitForConnected(timeout * 1000))
     {
         return -1;
     }
-
-//    ctrlConn = TcpConnector::connect(addr, ret, timeout);
-//	if(!ctrlConn) return ret;
-
-//	ctrlConn->get_remote_addr(remoteAddr);
-//	ctrlConn->get_local_addr(localAddr);
 
     qRemoteAddr = qCtrLSock->peerAddress();
     qLocalAddr = qCtrLSock->localAddress();
@@ -97,12 +80,7 @@ Ftp::connect(const char *addrstr, int port)
 int
 Ftp::reconnect()
 {
-//	int ret;
 	log(_("Reconnecting...\n"));
-//	delete ctrlConn; ctrlConn = NULL;
-//	delete dataConn; dataConn = NULL;
-//	ctrlConn = TcpConnector::connect(remoteAddr, ret, timeout);
-//	if(!ctrlConn) return ret;
 
     qCtrLSock->close(); qDataSock->close();
 
@@ -120,7 +98,6 @@ Ftp::ftp_cmd(const char* cmd, const char* args)
 {
     int ret;
     char buffer[1024];
-//	int len;
 
 	if(cmd){
 		snprintf(buffer, 1024, "%s%s%s\r\n", cmd, 
@@ -130,13 +107,10 @@ Ftp::ftp_cmd(const char* cmd, const char* args)
         if ((ret = qCtrLSock->write(buffer)) < 0)
             return ret;
         qCtrLSock->waitForBytesWritten(timeout *1000);
-//        if((ret=ctrlConn->write(buffer, timeout)) < 0)
-//			return ret;
 	}
 
 	do{
         qCtrLSock->waitForReadyRead(timeout * 1000);
-//		ret = ctrlConn->read_line(buffer, 1024, timeout);
         ret = qCtrLSock->readLine(buffer, 1024);
 		if(ret < 0){
 			return ret;
@@ -275,19 +249,19 @@ Ftp::set_mode(int mode)
 	if(mode != PASV && mode != PORT) return -1;
 	this->mode = mode;
 	return 0;
-};
+}
 
 void
 Ftp::set_log( void(*f)(const char*str, ...))
 {
 	this->log = f;
-};
+}
 
 void
 Ftp::set_timeout(long timeout)
 {
 	this->timeout = timeout;
-};
+}
 
 int
 Ftp::type(const char* type)
@@ -302,7 +276,7 @@ Ftp::type(const char* type)
 		default:
 			return ret;
 	}
-};
+}
 
 int
 Ftp::pasv(int *port)
@@ -325,7 +299,7 @@ Ftp::pasv(int *port)
 	 * =>229 xxxx(|||6446|)
 	 */
 
-	if(remoteAddr.ai_family == AF_INET){ // ipv4
+    if(qRemoteAddr.protocol() == QAbstractSocket::IPv4Protocol){ // ipv4
 		ret = ftp_cmd("PASV");
 		switch(ret){
 			case 227:
@@ -341,7 +315,7 @@ Ftp::pasv(int *port)
 		}while(ptr != stateLine && ISDIGIT(*ptr));
 		if(ptr == stateLine) return -1;
 		*port += atoi(ptr+1)<<8;
-	}else if(remoteAddr.ai_family == AF_INET6){
+    }else if(qRemoteAddr.protocol() == QAbstractSocket::IPv6Protocol){
 		ret = ftp_cmd("EPSV", "2");
 		switch(ret){
 			case 229:
@@ -379,19 +353,17 @@ Ftp::port(int port)
 	 * <=EPRT |2|IPv6.ascii|PORT.ascii|
 	 * =>200 xxx
 	 */
-	if(localAddr.ai_family == AF_INET){
-		if(localAddr.get_addr(addr, INET_ADDRSTRLEN) < 0)
-			return -1;
-		ptr = addr; 
+    if(qLocalAddr.protocol() == QAbstractSocket::IPv4Protocol){
+        strcpy(addr, qLocalAddr.toString().toStdString().c_str());
+
 		while(*ptr){
 			if(*ptr == '.') *ptr = ',';
 			ptr ++;
 		}
 		snprintf(buffer, 128, "%s,%d,%d", addr, port>>8, port&0xff);
 		ret = ftp_cmd("PORT", buffer);
-	}else if(localAddr.ai_family == AF_INET6){
-		if(localAddr.get_addr(addr, INET6_ADDRSTRLEN) < 0)
-			return -1;
+    }else if(qLocalAddr.protocol() == QAbstractSocket::IPv6Protocol){
+        strcpy(addr, qLocalAddr.toString().toStdString().c_str());
 		snprintf(buffer, 128, "|2|%s|%d|", addr, port);
 		ret = ftp_cmd("EPRT", buffer);
 	}else
@@ -405,7 +377,7 @@ Ftp::port(int port)
 	}
 
 	return 0;
-};
+}
 
 // set command to the server and wating data-connection
 // opened successfully
@@ -414,16 +386,14 @@ Ftp::ftp_data_cmd(const char* cmd, const char* args, qint64 offset)
 {
 	int ret;
 	int port;
-//	TcpSockAddr data_sock;
-	TcpAcceptor taptr;
 
-	// initial data-connection
+//	TcpAcceptor taptr;
+
 	if(mode == PASV){ //passive
 		ret = pasv(&port);
 		if(ret != 0) return ret;
 
-//		data_sock = remoteAddr;
-//		data_sock.set_port(port);
+
 
         qDataSock->connectToHost(qRemoteAddr, port);
         if (!qDataSock->waitForConnected(timeout * 1000))
@@ -467,7 +437,7 @@ Ftp::ftp_data_cmd(const char* cmd, const char* args, qint64 offset)
 	// data-connecting is opened and can read from 
 	// the data-connection now
 	return 0;
-};
+}
 
 // quit normally
 int
@@ -491,7 +461,6 @@ Ftp::read_data(char *buffer, int maxsize)
 {
     qDataSock->waitForReadyRead(timeout * 1000);
     return qDataSock->read(buffer, maxsize);
-//	return dataConn->read(buffer, maxsize, timeout);
 }
 
 // get a line, will be used by LIST
@@ -500,15 +469,12 @@ Ftp::gets_data(char *buffer, int maxsize)
 {
     qDataSock->waitForReadyRead(timeout * 1000);
     return qDataSock->readLine(buffer, maxsize);
-//	return dataConn->read_line(buffer, maxsize, timeout);
 }
 
 int
 Ftp::data_ends()
 {
 	int ret;
-
-	delete dataConn; dataConn = NULL;
     qDataSock->close();
 	ret = ftp_cmd();
 	switch(ret){
