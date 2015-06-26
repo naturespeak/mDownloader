@@ -16,3 +16,9 @@ And it supports BitTorrent protocol.
 2. Install OpenSSL for Widnows 32-bit to C:/OpenSSL-Win32/
 
 3. Use Qt Creator to open mDownloader.pro and build
+
+
+# Latest official build 
+
+http://qinchuan.me/downloads/mDownloader-Setup-1.0.1Build005.exe
+
