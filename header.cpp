@@ -70,7 +70,7 @@ HeadData::get_attr(const char *attrName)
     }
 
 	return NULL;
-};
+}
 
 int 
 HeadData::set_attr(const char *attrName, const char *attrValue)
