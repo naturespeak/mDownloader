@@ -61,6 +61,7 @@ Http::Http()
 
 Http::~Http()
 {
+    qSock->close();
     delete qSock;
 }
 

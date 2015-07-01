@@ -54,6 +54,8 @@ Ftp::Ftp()
 
 Ftp::~Ftp()
 {
+    qCtrLSock->close();
+    qDataSock->close();
     delete qCtrLSock;
     delete qDataSock;
 }
