@@ -26,17 +26,13 @@
 #define _HTTP_H
 
 #include <sys/types.h>
-#include <QTcpSocket>
+#include <QSslSocket>
 #include <QHostAddress>
 
 #include "advio.h"
 #include "header.h"
 #include "macro.h"
 		
-
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
 
 class Http
 	: public PluginIO
@@ -49,10 +45,10 @@ class Http
 		void set_timeout(long timeout);
 		// set log function
 		void set_log(void(*log)(const char *, ...));
-#ifdef HAVE_SSL
+
 		// set ues ssl
 		void set_use_ssl(bool use);
-#endif
+
 
 		// connect to the http server
 		int connect(const char *host, int port);
@@ -97,7 +93,7 @@ class Http
         static void default_log(const char *, ...){};
 
 	protected:
-        QTcpSocket *qSock;
+        QSslSocket *qSock;
         QHostAddress remoteAddr;
 
 		HeadData request;
@@ -109,9 +105,9 @@ class Http
 		qint64 fileSize;
 		qint64 chunkedSize;
 		bool isChunked;
-#ifdef HAVE_SSL
+
 		bool useSSL;
-#endif
+
 };
 
 #endif // _HEADER_H

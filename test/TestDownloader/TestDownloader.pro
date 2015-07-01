@@ -53,6 +53,3 @@ HEADERS += \
     ../../task.h \
     ../../url.h \
     ../../utils.h
-
-LIBS += -LC:/OpenSSL-Win32/lib -lssleay32
-INCLUDEPATH += C:/OpenSSL-Win32/include

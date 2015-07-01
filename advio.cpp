@@ -32,9 +32,6 @@
 #include "macro.h"
 #include "plugin.h"
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
 
 /*****************************************************
  * class IOStream implement
@@ -43,40 +40,16 @@
 IOStream::IOStream(int infd)
 	:fd(infd)
 {
-#ifdef HAVE_SSL
-	ssl = NULL;
-	sslCTX = NULL;
-	useSSL = false;
-#endif
 };
 
 IOStream::~IOStream()
 { 
-#ifdef HAVE_SSL
-	if(useSSL){
-		SSL_shutdown(ssl);
-        //free(ssl);
-		if(sslCTX) SSL_CTX_free(sslCTX);
-	}
-#endif
 };
 
 int
 IOStream::set_fd(int infd)
 {
 	fd = infd;
-#ifdef HAVE_SSL
-	if(useSSL){
-		assert(ssl != NULL);
-		SSL_set_fd(ssl, infd);
-		int ret;
-		if((ret=SSL_connect(ssl)) <= 0){
-			SSL_get_error(ssl, ret);
-			return -1;
-		}
-	}
-#endif
-
 	return 0;
 };
 
@@ -97,44 +70,6 @@ IOStream::close()
 {
 	return ::close(fd);
 };
-
-#ifdef HAVE_SSL
-void
-IOStream::set_use_ssl(bool use)
-{
-	if(use){
-		if(!useSSL){
-			useSSL = true;
-			free(ssl);
-			if(sslCTX != NULL) SSL_CTX_free(sslCTX);
-			sslCTX = SSL_CTX_new(SSLv23_client_method());
-			ssl = SSL_new(sslCTX);
-			SSL_set_fd(ssl, fd);
-		}
-	}else{
-		useSSL =false;
-		SSL_shutdown(ssl);
-		free(ssl); ssl = NULL;
-		if(sslCTX) SSL_CTX_free(sslCTX);
-	}
-};
-
-int
-IOStream::ssl_connect(void)
-{
-	assert(fd >= 0);
-	if(!useSSL || ssl == NULL){
-		return -1;
-	}
-	int ret;
-	if((ret=SSL_connect(ssl)) <= 0){
-		SSL_get_error(ssl, ret);
-		return -1;
-	}else{
-		return 0;
-	}
-};
-#endif // HAVE_SSL
 
 
 /*****************************************************************

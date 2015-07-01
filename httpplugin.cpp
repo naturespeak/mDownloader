@@ -31,9 +31,6 @@
 #include "httpplugin.h"
 #include "debug.h"
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
 
 using namespace std;
 
@@ -45,11 +42,9 @@ HttpPlugin::get_info(Task *task)
 
     http.set_timeout(task->get_timeout());
 	http.set_log(&debug_log);
-#ifdef HAVE_SSL
     if(task->get_protocol() == HTTPS){
 		http.set_use_ssl(true);
 	}
-#endif
 
     if(task->get_url_user() != NULL){
         http.auth(task->get_url_user(),
@@ -87,7 +82,7 @@ HttpPlugin::get_info(Task *task)
         int rt = -33;
         if( (rt= http.connect(task->get_url_host(), task->get_url_port())) < 0){
         //    cerr << "http direct connect failed, rt:" << rt << endl;
-			return -2;
+            return -2;
 		}
 
         if(http.get(task->get_encoded_path()) < 0){
@@ -199,11 +194,11 @@ HttpPlugin::download(Task& task, Block *block)
 	Http http;
     http.set_timeout(task.get_timeout());
 	http.set_log(&debug_log);
-#ifdef HAVE_SSL
+
     if(task.get_protocol() == HTTPS){
 		http.set_use_ssl(true);
 	}
-#endif
+
 
     if(task.get_resumeSupported()){
 		// the end is not set for the schedule purpose

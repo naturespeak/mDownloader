@@ -83,7 +83,4 @@ FORMS    += mainwindowdownloader.ui \
 RESOURCES += \
     mDownloader.qrc
 
-LIBS += -LC:/OpenSSL-Win32/lib -lssleay32
-INCLUDEPATH += C:/OpenSSL-Win32/include
-
 TRANSLATIONS = mDownloader_zh_CN.ts

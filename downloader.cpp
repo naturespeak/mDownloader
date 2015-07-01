@@ -41,10 +41,6 @@
 #define snprintf sprintf_s
 #endif
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
-
 typedef void* (*threadFunction) (void*);
 
 void
@@ -92,9 +88,7 @@ Downloader::init_plugin(void)
     }else{
         switch(task.get_protocol()){
         case HTTP:
-#ifdef HAVE_SSL
         case HTTPS:
-#endif
             delete plugin;
             plugin = new HttpPlugin;
             break;

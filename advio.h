@@ -39,9 +39,6 @@
 #include <io.h>
 #include <sys/types.h>
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
 
 #include <QFile>
 
@@ -60,19 +57,8 @@ public:
     int open(const char *file, int flag=O_RDWR|O_CREAT, int mode=00644);
     int close();
 
-
-#ifdef HAVE_SSL
-    void set_use_ssl(bool use);
-    int ssl_connect(void);
-#endif
-
 protected:
     int fd;
-#ifdef HAVE_SSL
-    SSL *ssl;
-    SSL_CTX *sslCTX;
-    bool useSSL;
-#endif
 };
 
 /* extend timeout input & output stream*/

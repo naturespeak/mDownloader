@@ -6,10 +6,6 @@
 #include "hashworker.h"
 
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
-
 #define TEST_HASH "6f2c0ff4e3cab35bb49312ce88e1a690"
 #define TEST_URL "10.231.14.85/uploads/burpsuite_free_v1.6.jar"
 #define TEMP_FILE "test.test"
@@ -45,10 +41,6 @@ private:
 
 TestDownloader::TestDownloader()
 {
-    #ifdef HAVE_SSL
-    SSL_load_error_strings();
-    SSLeay_add_ssl_algorithms();
-    #endif
     m_hash = QString("");
 }
 
@@ -86,7 +78,7 @@ void TestDownloader::testCase1_data()
     QTest::addColumn<QString>("nThreads");
     QTest::addColumn<QString>("hashVal");
 
-//    QString https_qstr = QString("https://") + QString(TEST_URL);
+    QString https_qstr = QString("https://") + QString(TEST_URL);
     QString http_qstr = QString("http://") + QString(TEST_URL);
     QString ftp_qstr = QString("ftp://") + QString(TEST_URL);
 
@@ -95,11 +87,11 @@ void TestDownloader::testCase1_data()
         QString nThreads;
         nThreads.setNum(i);
 
-//        QString https_string = QString("https_") + nThreads + QString("_thread");
+        QString https_string = QString("https_") + nThreads + QString("_thread");
         QString http_string = QString("http_") + nThreads + QString("_thread");
         QString ftp_string = QString("ftp_") + nThreads + QString("_thread");
 
-//        QTest::newRow(https_string.toStdString().c_str()) << https_qstr    << nThreads  << TEST_HASH;
+        QTest::newRow(https_string.toStdString().c_str()) << https_qstr    << nThreads  << TEST_HASH;
         QTest::newRow(http_string.toStdString().c_str()) << http_qstr     << nThreads  << TEST_HASH;
         QTest::newRow(ftp_string.toStdString().c_str()) << ftp_qstr      << nThreads  << TEST_HASH;
     }

@@ -38,17 +38,8 @@ using namespace std;
 
 #include <QLibraryInfo>
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
-
 int main(int argc, char *argv[])
 {   
-#ifdef HAVE_SSL
-    SSL_load_error_strings();
-    SSLeay_add_ssl_algorithms();
-#endif
-
     QApplication a(argc, argv);
 
     QTranslator qtTranslator;

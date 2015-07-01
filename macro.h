@@ -29,9 +29,6 @@
 #  include <config.h>
 #endif
 
-//#ifndef HAVE_SSL
-//#define HAVE_SSL
-//#endif
 
 // #define DEBUG
 

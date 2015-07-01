@@ -56,19 +56,11 @@ struct proto_struct
 	bool supported;
 };
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
-
 const static proto_struct protocol_table[] = {
 	{"http://", HTTP, 80, true},
 	{"ftp://", FTP, 21, true},
 	{"sftp://", SFTP, 115, false},
-#ifdef HAVE_SSL
-	{"https://", HTTPS, 443, true},
-#else
-	{"https://", HTTPS, 443, false},
-#endif
+    {"https://", HTTPS, 443, true},
 	{"mms://", MMS, 1755, false},
 	{"rtsp://", RTSP, 554, false},
 	{NULL, NONE, 0, false}

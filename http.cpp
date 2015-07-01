@@ -25,15 +25,13 @@
 using namespace std;
 #include <cstring>
 #include <cassert>
+#include <QDebug>
 
 #include "http.h"
 #include "utils.h"
 #include "macro.h"
 #include "header.h"
 
-#ifdef HAVE_SSL
-#	include <openssl/ssl.h>
-#endif
 
 /***************************************************
  * class Http implement
@@ -46,12 +44,12 @@ using namespace std;
 
 Http::Http()
 {
-    qSock = new QTcpSocket();
+    qSock = new QSslSocket();
 
 	timeout = 30;
-#ifdef HAVE_SSL
+
 	useSSL = false;
-#endif
+
 	log = &default_log;
 	request.set_attr("Connection", "close");
 	request.set_attr("User-Agent", USER_AGENT);
@@ -77,32 +75,34 @@ Http::set_log(void(*log)(const char *, ...))
 	this->log = log;
 }
 
-#ifdef HAVE_SSL
+
 void
 Http::set_use_ssl(bool use)
 {
 	this->useSSL = use;
 }
-#endif
+
 
 int
 Http::connect(const char *host, int port)
 {
-    qSock->connectToHost(QString(host), port);
-    if (!qSock->waitForConnected(timeout * 1000))
+    if (useSSL)
     {
-        return -1;
+        qSock->setPeerVerifyMode(QSslSocket::VerifyNone);
+        qSock->connectToHostEncrypted(QString(host), port);
+        if (!qSock->waitForEncrypted(timeout * 1000))
+        {
+            return -1;
+        }
     }
-
-#ifdef HAVE_SSL
-	if(useSSL){
-		conn->set_use_ssl(useSSL);
-		if(conn->ssl_connect() < 0){
-			delete conn; conn = NULL;
-			return E_SSL_CONN;
-		}
-	}
-#endif
+    else
+    {
+        qSock->connectToHost(QString(host), port);
+        if (!qSock->waitForConnected(timeout * 1000))
+        {
+            return -1;
+        }
+    }
 
     remoteAddr = qSock->peerAddress();
 
@@ -164,22 +164,13 @@ int
 Http::set_host(const char *host, int port)
 {
 	if(strchr(host, ':')){ /* ipv6 */
-#ifdef HAVE_SSL
 		if((useSSL && port != 443) || (!useSSL && port != 80)){
-#else
-		if(port != 80){
-#endif
 			snprintf(buf, 1024, "[%s]:%d", host, port);
 		}else{
 			snprintf(buf, 1024, "[%s]", host);
 		}
-			snprintf(buf, 1024, "[%s]:%d", host, port);
 	}else{
-#ifdef HAVE_SSL
 		if((useSSL && port != 443) || (!useSSL && port != 80)){
-#else
-		if(port != 80){
-#endif
 			snprintf(buf, 1024, "%s:%d", host, port);
 		}else{
 			snprintf(buf, 1024, "%s", host);
