@@ -63,12 +63,12 @@ FtpPlugin::get_info(Task *task)
 
 	// passive or port
 	int port;
-	ret = ftp.pasv(&port);
-	if(ret < 0){
-		return -2;
-	}else if(ret > 0){
-        task->set_ftpActive(1);
-	}
+    ret = ftp.pasv(&port);
+    if(ret < 0){
+        return -2;
+    }else if(ret > 0){
+        task->set_ftpActive(true);
+    }
 
 	// can access
     ret = ftp.cwd(task->get_dir());

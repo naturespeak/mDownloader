@@ -38,7 +38,7 @@ using namespace std;
  * the relative RFCS can be found at
  * http://www.w3.org/Protocols/
  ***************************************************/
-#define USER_AGENT "Myget"
+#define USER_AGENT "mDownloader"
 #define HTTP_VERSION "1.1"
 
 

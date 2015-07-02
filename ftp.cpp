@@ -45,9 +45,10 @@ Ftp::Ftp()
 {
     qCtrLSock = new QTcpSocket(0);
     qDataSock = new QTcpSocket(0);
+    qDataServer = new QTcpServer(0);
 
     timeout = 30;
-	mode = PASV;
+    mode = PASV;
 	stateLine[0] = 0;
 	log = &default_log;
 }
@@ -58,6 +59,7 @@ Ftp::~Ftp()
     qDataSock->close();
     delete qCtrLSock;
     delete qDataSock;
+    delete qDataServer;
 }
 
 int
@@ -339,12 +341,12 @@ Ftp::pasv(int *port)
 };
 
 int
-Ftp::port(int port)
+Ftp::port_cmd(int port)
 {
 	int ret;
 	char buffer[128];
 	char addr[INET6_ADDRSTRLEN];
-	char *ptr;
+    char *ptr = NULL;
 
 	/************************************
 	 * RFC2428
@@ -357,7 +359,7 @@ Ftp::port(int port)
 	 */
     if(qLocalAddr.protocol() == QAbstractSocket::IPv4Protocol){
         strcpy(addr, qLocalAddr.toString().toStdString().c_str());
-
+        ptr = addr;
 		while(*ptr){
 			if(*ptr == '.') *ptr = ',';
 			ptr ++;
@@ -389,31 +391,19 @@ Ftp::ftp_data_cmd(const char* cmd, const char* args, qint64 offset)
 	int ret;
 	int port;
 
-//	TcpAcceptor taptr;
-
 	if(mode == PASV){ //passive
 		ret = pasv(&port);
 		if(ret != 0) return ret;
-
-
 
         qDataSock->connectToHost(qRemoteAddr, port);
         if (!qDataSock->waitForConnected(timeout * 1000))
         {
             return -1;
         }
-	}else if(mode == PORT){ // port
-//		data_sock = localAddr;
-//		data_sock.set_port(0);
-
-
-
-//		ret = taptr.listen(data_sock);
-//		if(ret < 0) return ret;
-//		port = taptr.get_bind_port();
-
-//		ret = this->port(port);
-//		if(ret != 0) return ret;
+    }else if(mode == PORT){ //active
+        qDataServer->listen(qLocalAddr);
+        ret = port_cmd(qDataServer->serverPort());
+        if(ret != 0) return ret;
 	}
 
 	if(offset > 0){
@@ -422,7 +412,7 @@ Ftp::ftp_data_cmd(const char* cmd, const char* args, qint64 offset)
 	}
 	// send command and wait
 	ret = ftp_cmd(cmd, args);
-	switch(ret){
+    switch(ret){
 		case 150:
 		case 125:
 			break;
@@ -431,14 +421,11 @@ Ftp::ftp_data_cmd(const char* cmd, const char* args, qint64 offset)
 	}
 
 	if(mode == PORT){
-//		dataConn = taptr.accept(remoteAddr, ret, timeout);
-//		if(!dataConn) return ret;
+        qDataServer->waitForNewConnection(-1);
+        qDataSock = qDataServer->nextPendingConnection();
 	}
 
-//	dataConn->set_tos();
-	// data-connecting is opened and can read from 
-	// the data-connection now
-	return 0;
+    return 0;
 }
 
 // quit normally

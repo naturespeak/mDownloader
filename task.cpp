@@ -32,7 +32,7 @@ Task::Task()
 	tryCount = 99;
 	retryInterval = 5;
 	timeout = 30;
-	ftpActive = PASV;
+    ftpActive = PASV;
     threadNum = 10;
 	localDir = NULL;
 	localFile = NULL;
@@ -107,9 +107,16 @@ Task::get_ftpActive()
 }
 
 void
-Task::set_ftpActive(int active)
+Task::set_ftpActive(bool is_active)
 {
-    ftpActive = active;
+    if (is_active)
+    {
+        ftpActive = PORT;
+    }
+    else
+    {
+        ftpActive = PASV;
+    }
 }
 
 const int

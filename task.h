@@ -60,7 +60,7 @@ class Task
 
 
         const int get_ftpActive();
-        void set_ftpActive(int active);
+        void set_ftpActive(bool is_active);
 
         const int get_threadNum();
         void set_threadNum(int Num);

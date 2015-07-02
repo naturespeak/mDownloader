@@ -84,7 +84,7 @@ class Ftp
 		// quit
 		int quit();
 
-		int port(int port);
+        int port_cmd(int port);
 		int pasv(int *port);
 
 	private:
@@ -99,6 +99,8 @@ class Ftp
 	protected:
         QTcpSocket *qCtrLSock;
         QTcpSocket *qDataSock;
+        QTcpServer *qDataServer;
+
         QHostAddress qRemoteAddr;
         QHostAddress qLocalAddr;
         int m_port;
