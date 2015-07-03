@@ -22,7 +22,6 @@
  */
 
 #include <cassert>
-#include <iostream>
 
 #include "http.h"
 #include "url.h"
@@ -67,7 +66,7 @@ HttpPlugin::get_info(Task *task)
 			return -1;
 		}
         if(http.connect(task->get_proxy_host(), task->get_proxy_port()) < 0){
-            cerr << "http proxy connect failed" << endl;
+            qCritical() << "http proxy connect failed" << endl;
 			return -2;
 		}
         http.set_host(task->get_url_host(), task->get_url_port());
@@ -86,7 +85,7 @@ HttpPlugin::get_info(Task *task)
 		}
 
         if(http.get(task->get_encoded_path()) < 0){
-            cerr << "http get failed" << endl;
+            qCritical() << "http get failed" << endl;
 			return -2;
 		}
 	}
@@ -128,7 +127,7 @@ HttpPlugin::get_info(Task *task)
 			}
         case 400: // HTTP BAD REQUEST
             {
-                cerr << "http server returned bad request" << endl;
+                qCritical() << "http server returned bad request" << endl;
             }
 		default:
 			return -1;

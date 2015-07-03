@@ -24,18 +24,16 @@
 #ifndef _DOWNLOADER_H
 #define _DOWNLOADER_H
 
-#include <iostream>
 #include <QThread>
 #include <QString>
 #include <QWidget>
+#include <QDebug>
 
 #include "plugin.h"
 #include "task.h"
 #include "block.h"
 #include "url.h"
 #include "progressbar.h"
-
-using namespace std;
 
 
 class Downloader: public QThread
@@ -106,7 +104,7 @@ class DownloadWorker : public QObject
 
 public slots:
     void doWork(Downloader *downloader, QThread *ptr_thread) {
-        cerr << endl << "doWork going in thread:" << downloader->self(ptr_thread);
+        qDebug() << endl << "doWork going in thread:" << downloader->self(ptr_thread);
         QString result;
         Downloader::download_thread(downloader, ptr_thread);
         emit resultReady(result);

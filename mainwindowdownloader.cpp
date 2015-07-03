@@ -38,10 +38,6 @@
 #include "utils.h"
 #include "addtorrentdialog.h"
 
-#include <iostream>
-using std::cerr;
-using std::endl;
-
 #include "mainwindowdownloader.h"
 #include "ui_mainwindowdownloader.h"
 

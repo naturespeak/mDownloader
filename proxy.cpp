@@ -21,8 +21,6 @@
  *  2005 by xiaosuo
  */
 
-#include <iostream>
-
 #include "url.h"
 #include "proxy.h"
 #include "utils.h"

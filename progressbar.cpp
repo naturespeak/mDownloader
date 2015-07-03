@@ -27,9 +27,6 @@
 #include <cstdio>
 #include <sys/types.h>
 #include <signal.h>
-#include <iostream>
-using std::cerr;
-using std::endl;
 
 #include "progressbar.h"
 #include "utils.h"

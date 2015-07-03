@@ -21,7 +21,6 @@
  *  2005 by xiaosuo
  */
 
-#include <iostream>
 #include <cstring>
 #include <cassert>
 

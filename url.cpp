@@ -506,7 +506,7 @@ URL::reset_url(const char *url_orig)
 	}else{
 		for(ps = protocol_table; ps->protocolStr != NULL; ps ++){
 			if(ps->protocol == protocol){
-                strncpy(pro_str , ps->protocolStr, sizeof(ps->protocolStr));
+                strncpy(pro_str , ps->protocolStr, sizeof(pro_str));
 				break;
 			}
 		}

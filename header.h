@@ -21,11 +21,9 @@
  *  2005 by xiaosuo
  */
 
-
 #ifndef _HEADER_H
 #define _HEADER_H
 
-#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

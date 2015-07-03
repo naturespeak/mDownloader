@@ -21,8 +21,6 @@
  *  2005 by xiaosuo
  */
 
-#include <iostream>
-using namespace std;
 #include <cstring>
 #include <cassert>
 #include <QDebug>
@@ -187,17 +185,17 @@ Http::send_head()
 	int ret;
     if (qSock->state() == QAbstractSocket::ConnectedState)
     {
-        cerr << "Send_head() qSock connected" << endl;
+        qDebug() << "Send_head() qSock connected" << endl;
     }
     else
     {
-        exit(-1);
+        return -1;
     }
 
-    cerr << "EXE enter into send_head()" << endl;
+    qDebug() << "EXE enter into send_head()" << endl;
 	for(it = request.head; it != NULL; it = it->next){
 		snprintf(buf, 1024, "%s: %s\r\n", it->attrName, it->attrValue);
-        cerr << "buf in send head: " << buf << endl;
+        qDebug() << "buf in send head: " << buf << endl;
         if((ret=qSock->write(buf)) < 0) return ret;
         qSock->waitForBytesWritten(timeout * 1000);
 		log("%s: %s\r\n", it->attrName, it->attrValue);
@@ -233,7 +231,7 @@ Http::get(const char *url)
 	int ret;
 
     snprintf(buf, 1024, "GET %s HTTP/%s\r\n", url, HTTP_VERSION);
-    cerr << "buf to send in get: " << buf << endl;
+    qDebug() << "buf to send in get: " << buf << endl;
     if((ret=qSock->write(buf)) < 0) return ret;
     qSock->waitForBytesWritten(timeout * 1000);
 	log("GET %s HTTP/%s\r\n", url, HTTP_VERSION);

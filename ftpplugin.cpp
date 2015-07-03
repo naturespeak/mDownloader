@@ -21,8 +21,6 @@
  *  2005 by xiaosuo
  */
 
-#include <iostream>
-
 #include "ftpplugin.h"
 #include "ftp.h"
 #include "macro.h"

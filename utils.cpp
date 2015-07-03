@@ -22,7 +22,6 @@
  */
 
 #include <stdio.h>
-#include <iostream>
 #include <cassert>
 #include <cstring>
 #include <sys/types.h>

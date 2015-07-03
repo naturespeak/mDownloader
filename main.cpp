@@ -21,9 +21,6 @@
  *  2005 by xiaosuo
  */
 
-#include <iostream>
-using namespace std;
-
 #include "mainwindowdownloader.h"
 #include "newtask.h"
 #include "myget.h"
@@ -38,19 +35,30 @@ using namespace std;
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+    QFile debug_log("debug.log");
+    QFile error_log("error.log");
+
+    if (!debug_log.open(QIODevice::Append | QIODevice::Text))
+          return;
+    if (!error_log.open(QIODevice::Append | QIODevice::Text))
+          return;
+
+    QTextStream debug_out(&debug_log);
+    QTextStream error_out(&error_log);
+
     QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
     case QtDebugMsg:
-        fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        debug_out << "[Debug:] " << localMsg.constData() << "(" << context.file << ":" << context.line << ", " << context.function << ")" << endl;
         break;
     case QtWarningMsg:
-        fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        debug_out << "[Warning:] " << localMsg.constData() << "(" << context.file << ":" << context.line << ", " << context.function << ")" << endl;
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        error_out << "[Critical:] " << localMsg.constData() << "(" << context.file << ":" << context.line << ", " << context.function << ")" << endl;
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        error_out << "[Fatal:] " << localMsg.constData() << "(" << context.file << ":" << context.line << ", " << context.function << ")" << endl;
         abort();
     }
 }
