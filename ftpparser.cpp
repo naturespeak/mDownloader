@@ -173,7 +173,7 @@ FtpParser::process_unix(char *line)
 	struct tm tmp;
 	type = *line;
 
-	static char* MonthStr[] = 
+    static char MonthStr[][4] =
 	{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 	  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	  NULL};
@@ -201,9 +201,8 @@ FtpParser::process_unix(char *line)
 	// Aug  7  1999
 	// Aug 22 15:34
 	int i;
-	char **mon = MonthStr;
-	for(i = 0; mon[i] != NULL; i ++){
-        if(strncmp(line, mon[i], 3) == 0){
+    for(i = 0; MonthStr[i] != NULL; i ++){
+        if(strncmp(line, MonthStr[i], 3) == 0){
 			tmp.tm_mon = i;
 			line += 3;
 			break;

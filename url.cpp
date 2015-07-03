@@ -50,7 +50,7 @@ using namespace std;
 
 struct proto_struct
 {
-	char *protocolStr;
+    char protocolStr[10];
 	Protocol protocol;
 	int defaultPort;
 	bool supported;
@@ -497,7 +497,7 @@ URL::reset_url(const char *url_orig)
 	assert(url_orig);
 
 	char buf[1024];
-	char *pro_str = NULL;
+    char pro_str[10];
 	const char *url_new;
 	const proto_struct *ps;
 
@@ -506,7 +506,7 @@ URL::reset_url(const char *url_orig)
 	}else{
 		for(ps = protocol_table; ps->protocolStr != NULL; ps ++){
 			if(ps->protocol == protocol){
-				pro_str = ps->protocolStr;
+                strncpy(pro_str , ps->protocolStr, sizeof(ps->protocolStr));
 				break;
 			}
 		}
