@@ -44,7 +44,7 @@
 typedef void* (*threadFunction) (void*);
 
 void
-Downloader::catch_ctrl_c(int signo)
+Downloader::catch_ctrl_c(int /*signo*/)
 {
     if(is_downloading){
         sigint_received = true;
@@ -231,7 +231,7 @@ Downloader::init_threads_from_mg(void)
         blocks[i].size = readData.toLong();
         readData.clear();
         qDebug() << "size for thread " << i << ": " << blocks[i].size << endl;
-        if(blocks[i].bufferFile.open(localMg) < 0){
+        if(!(blocks[i].bufferFile.open(localMg))){
             tempFile->close();
             delete tempFile;
             perror("Can not open the temp file to write");
@@ -263,7 +263,7 @@ Downloader::init_threads_from_info(void)
     for(i = 0; i < threadNum; i ++){
         blocks[i].startPoint = i * block_size;
         blocks[i].size = block_size;
-        if(blocks[i].bufferFile.open(localMg) < 0){
+        if(!(blocks[i].bufferFile.open(localMg))){
             perror("Can not open the temp file to write");
             emit errorHappened(QString("Can not open the temp file to write"));
             return -1;
@@ -473,61 +473,65 @@ Downloader::save_temp_file_exit(void)
 }
 
 int
-Downloader::file_download(void)
+Downloader::try_resume_from_paused(void)
 {
-    int i;
-    int ret = 0;
-    QString errorMsg;
-
-    init_local_file_name();
-    if(file_exist(localPath)){
-        qCritical() <<"File already exist: "<<localPath<<endl;
-        errorMsg = QString(tr("The file already exists: "));
-        errorMsg += QDir::toNativeSeparators(localPath);
-        emit errorHappened(errorMsg);
-        return 0;
-    }
-    qDebug() <<"Begin to download: "
-       <<(task.get_local_file() ? task.get_local_file() : task.get_file())<<endl;
-    char buf[20];
-    double time = get_current_time();
-    convert_size(buf, task.get_file_size());
-    qDebug() <<"Filesize: "<<buf<<endl;
-    emit set_GuiLabelTotal(QString(buf));
-
-    if(task.get_file_size() == 0){
-        int fd;
-        if( _sopen_s( &fd, localPath, _O_RDWR | _O_CREAT | _O_BINARY, _SH_DENYNO,
-                      _S_IREAD | _S_IWRITE ) == 0)
-        {
-            qDebug() << "Created data file: " << localPath << endl;
-            _close(fd);
-            return 0;
-        }
-        else{
-            qCritical() << "error when creat file: " << localPath << endl;
-            emit errorHappened(QString("error when creat file"));
-            return -1;
-        }
-    }
-
+    int ret;
     if(!task.get_resumeSupported() || task.get_file_size() < 0){
         threadNum = 1;
         delete[] blocks;
         blocks = new Block[1];
         blocks[0].size = task.get_file_size();
         blocks[0].bufferFile.open(localMg);
-    }else if(file_exist(localMg)){
+        ret = 0;
+    }
+    else if(file_exist(localMg))
+    {
         ret = init_threads_from_mg();
-    }else{
+    }
+    else
+    {
         ret = init_threads_from_info();
     }
-    if(ret < 0){
-        qCritical() <<"Init threads failed"<<endl;
-        return ret;
-    }
+    return ret;
+}
 
-    for(i = 0; i < threadNum; i ++){
+int
+Downloader::create_zero_file(void)
+{
+    QFile file(localPath);
+    if (!file.open(QIODevice::ReadWrite))
+    {
+        qCritical() << "error when creat file: " << localPath << endl;
+        emit errorHappened(QString("error when creat file"));
+        return -1;
+    }
+    else
+    {
+        file.close();
+        qDebug() << "Created data file: " << localPath << endl;
+        return 0;
+    }
+}
+
+int
+Downloader::is_already_existed(void)
+{
+    QString errorMsg;
+    if(file_exist(localPath)){
+        qCritical() <<"File already exist: "<<localPath<<endl;
+        errorMsg = QString(tr("The file already exists: "));
+        errorMsg += QDir::toNativeSeparators(localPath);
+        emit errorHappened(errorMsg);
+        return 1;
+    }
+    else
+        return 0;
+}
+
+int
+Downloader::create_downloading_threads(void)
+{
+    for(int i = 0; i < threadNum; i ++){
         if(thread_create() < 0){
             perror("Create thread failed");
             emit errorHappened("Create thread failed");
@@ -535,53 +539,191 @@ Downloader::file_download(void)
         }
     }
 
-    qint64 *data;
-    data = new qint64[threadNum];
+    return 0;
+}
 
-    for(i = 0; i < threadNum; i ++){
-        data[i] = blocks[i].startPoint;
+int
+Downloader::pre_download_process(double start_time)
+{
+    int ret = 0;
+
+    init_local_file_name();
+
+    // Already done...
+    if (is_already_existed())
+        return 0;
+    if(task.get_file_size() == 0){
+        if ( (ret =create_zero_file()) == 0)
+            report_done(start_time);
+        return ret;
     }
-    pb->init();
 
-    pb->set_total_size(task.get_file_size());
-    qDebug() << "file_download: task.fileSize" << task.get_file_size();
-    emit set_GuiProgressBarMaximum(100);
-    pb->set_block_num(threadNum);
-    pb->set_start_point(data);
+    char buf[20];
+    convert_size(buf, task.get_file_size());
+    qDebug() <<"Filesize: "<<buf<<endl;
+    emit set_GuiLabelTotal(QString(buf));
+
+    if ( (ret=try_resume_from_paused()) < 0)
+    {
+        qCritical() <<"try_resume_from_paused failed"<<endl;
+        return ret;
+    }
+
+    if (create_downloading_threads() != 0)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+int
+Downloader::file_download(void)
+{
+    double time = get_current_time();
+
+    if(pre_download_process(time) != 0)
+    {
+        qCritical() << "pre_download_processing failed" << endl;
+        return -1;
+    }
 
     // update loop
+    prepare_progress_bar();
     is_downloading = true;
     while(1){
         if(sigint_received){
-            delete[] data;
+            delete[] pb->data;
             save_temp_file_exit();
             return 0;
         }
 
-        for(i = 0; i < threadNum; i ++){
-            data[i] = blocks[i].downloaded;
+        for(int i = 0; i < threadNum; i ++){
+            pb->data[i] = blocks[i].downloaded;
         }
-        pb->update(data);
-        float downloadedRatio = (float)(pb->get_curr_downloaded()) / (float)(task.get_file_size()) * 100;
-        qDebug() << "downloadedRatio: " << downloadedRatio;
-        emit set_GuiProgressBarValue(downloadedRatio);
-        emit set_GuiLabelDownloaded(QString(pb->get_downloaded()));
-        emit set_GuiLabelSpeed(QString(pb->get_downloadRate()) + QString("/S"));
-        emit set_GuiLabelRemainingTime(QString(pb->get_eta()));
+        update_progress_bar();
 
         if(schedule() == 0){
-            qDebug() << "all the thread are exit!" << endl;
-            break; // all the thread are exit
+            qDebug() << "all the thread exited!" << endl;
+            break; // all the thread exited
         }
         usleep(250000);
     }
+    delete[] pb->data;
 
-    delete[] data;
+    if (post_download_process(time) != 0)
+    {
+        qCritical() << "post_download_processing failed" << endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+void
+Downloader::prepare_progress_bar(void)
+{
+    pb->data = new qint64[threadNum];
+    for(int i = 0; i < threadNum; i ++){
+        pb->data[i] = blocks[i].startPoint;
+    }
+
+    pb->init();
+    pb->set_total_size(task.get_file_size());
+    qDebug() << "file_download: task.fileSize" << task.get_file_size();
+    emit set_GuiProgressBarMaximum(100);
+    pb->set_block_num(threadNum);
+    pb->set_start_point(pb->data);
+}
+
+void
+Downloader::update_progress_bar(void)
+{
+    pb->update(pb->data);
+    float downloadedRatio = (float)(pb->get_curr_downloaded()) / (float)(task.get_file_size()) * 100;
+    qDebug() << "downloadedRatio: " << downloadedRatio;
+    emit set_GuiProgressBarValue(downloadedRatio);
+    emit set_GuiLabelDownloaded(QString(pb->get_downloaded()));
+    emit set_GuiLabelSpeed(QString(pb->get_downloadRate()) + QString("/S"));
+    emit set_GuiLabelRemainingTime(QString(pb->get_eta()));
+}
+
+int
+Downloader::post_download_process(double download_start_time)
+{
+    if (check_downloaded_file() != 0)
+    {
+        return -1;
+    }
+
+    if (rename_temp_file() != 0)
+    {
+        return -1;
+    }
+
+    resize_downloaded_file(); // Do we really care about the size?
+
+    report_done(download_start_time);
+
+    return 0;
+}
+
+void
+Downloader::report_done(double start_time)
+{
+    char buf[20];
+    double time;
+    QString errorMsg;
+
+    is_downloading = false;
+    time = get_current_time() - start_time;
+    convert_time(buf, time);
+    emit set_GuiProgressBarValue(100);
+
+    qDebug() << endl << "Download successfully in "<<buf<<endl;
+    errorMsg = QString(tr("Download successfully in "));
+    errorMsg += QString(buf);
+    emit errorHappened(errorMsg);
+    emit done();
+}
+
+int
+Downloader::resize_downloaded_file(void)
+{
+    QFile downloadedFile(localPath);
+
+    if (!downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
+    {
+        qCritical() <<"Resize the downloaed file failed"<<endl;
+        emit errorHappened(QString(tr("Resize the downloaed file failed")));
+        return -1;
+    }
+    return 0;
+}
+
+int
+Downloader::rename_temp_file(void)
+{
+    if(rename(localMg, localPath) < 0){
+        qCritical() << "Rename failed" << endl;
+        emit errorHappened(QString(tr("Rename failed")));
+        return -1;
+    }
+    else
+    {
+        qDebug() << "Rename succeed." << endl;
+        return 0;
+    }
+}
+
+int
+Downloader::check_downloaded_file(void)
+{
     // recheck the size of the file if possible
     if(task.get_file_size() >= 0){
         qint64 downloaded;
         downloaded = 0;
-        for(i = 0; i < threadNum; i ++){
+        for(int i = 0; i < threadNum; i ++){
             downloaded += blocks[i].downloaded;
         }
         // the downloaded maybe bigger than the filesize
@@ -595,33 +737,6 @@ Downloader::file_download(void)
         }
     }
 
-    if(rename(localMg, localPath) < 0){
-        qCritical() << "Rename failed" << endl;
-        emit errorHappened(QString("Rename failed"));
-        return -1;
-    }
-    else
-    {
-        qDebug() << "Rename succeed." << endl;
-        QFile downloadedFile(localPath);
-
-        if (!downloadedFile.resize(task.get_file_size())) // Do we really need !sigint_received?
-        {
-            qCritical() <<"Resize the downloaed file failed"<<endl;
-            emit errorHappened(QString("Resize the downloaed file failed"));
-        }
-    }
-    is_downloading = false;
-
-    time = get_current_time() - time;
-    convert_time(buf, time);
-    emit set_GuiProgressBarValue(100);
-
-    qDebug() << endl << "Download successfully in "<<buf<<endl;
-    errorMsg = QString(tr("Download successfully in "));
-    errorMsg += QString(buf);
-    emit errorHappened(errorMsg);
-    emit done();
     return 0;
 }
 

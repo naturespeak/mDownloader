@@ -51,6 +51,8 @@ class ProgressBar
         char *get_downloadRate(void);
         char *get_eta(void);
 
+        qint64 *data;
+
 	private:
         static void screen_width_change(int signo);
 		

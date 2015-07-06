@@ -42,7 +42,7 @@
 int ProgressBar::graphWidth = 0;
 
 ProgressBar::ProgressBar(qint64 total_size, int block_num)
-	:totalSize(total_size), blockNum(block_num), lastDownloaded(0), direction(RIGHT)
+    :totalSize(total_size), blockNum(block_num), lastDownloaded(0), direction(RIGHT), data(NULL)
 {
 	char *term;
 	int i;

@@ -76,13 +76,27 @@ class Downloader: public QThread
 		int init_local_file_name(void);
 		int init_threads_from_mg(void);
 		int init_threads_from_info(void);
-
+        int create_zero_file(void);
 		int thread_create(void);
 
 		int schedule(void);
-		int save_temp_file_exit(void);
+        int save_temp_file_exit(void);
+        int is_already_existed(void);
+        int create_downloading_threads(void);
+        int pre_download_process(double start_time);
+        int file_download(void);
+        int try_resume_from_paused(void);
 
-		int file_download(void);
+        void prepare_progress_bar(void);
+        void update_progress_bar();
+        int check_downloaded_file(void);
+
+        int rename_temp_file(void);
+        int resize_downloaded_file(void);
+        void report_done(double start_time);
+
+        int post_download_process(double download_start_time);
+
         void catch_ctrl_c(int signo);
 
 	private:
