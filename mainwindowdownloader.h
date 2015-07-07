@@ -30,8 +30,6 @@
 
 #include <QProgressDialog>
 
-#include "torrentclient.h"
-
 QT_BEGIN_NAMESPACE
 class QAction;
 class QCloseEvent;
@@ -63,8 +61,6 @@ public slots:
     void set_labelDownloadSpeed(QString);
     void set_labelRemainingTime(QString);
     void on_error_happens(QString);
-    void saveSettings();
-    void loadSettings();
 
 private slots:
     void on_pushButtonNew_clicked();
@@ -78,24 +74,6 @@ private slots:
     void on_downloading_started(QString);
 
     void on_pushButtonAbout_clicked();
-
-    void updateState(TorrentClient::State state);
-    void updatePeerInfo();
-    void updateProgress(int percent);
-    void updateDownloadRate(int bytesPerSecond);
-    void updateDownloadedBytes(qint64 downloaded);
-    void updateUploadRate(int bytesPerSecond);
-
-
-    void setUploadLimit(int bytes);
-    void setDownloadLimit(int bytes);
-
-    void torrentStopped();
-    void torrentError(TorrentClient::Error error);
-
-    void on_pushButtonTorrent_clicked();
-
-    void on_pushButtonDelTorrent_clicked();
 
 signals:
     void newTaskShow(void);
@@ -114,24 +92,11 @@ private:
     QMessageBox msgBox;
     bool m_is_downloading_paused;
 
-    struct Job {
-        TorrentClient *client;
-        QString torrentFileName;
-        QString destinationDirectory;
-    };
-    QList<Job> jobs;
-    int jobsStopped;
-    int jobsToStop;
-
     QProgressDialog *quitDialog;
 
     bool saveChanges;
     QString lastDirectory;
 
-
-    int rowOfClient(TorrentClient *client) const;
-    bool addTorrent(const QString &fileName, const QString &destinationFolder,
-                    const QByteArray &resumeState = QByteArray());
 };
 
 #endif // MAINWINDOWDOWNLOADER_H

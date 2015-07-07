@@ -31,4 +31,4 @@ Block::Block()
 	startPoint = 0;
 	downloaded = 0;
 	size = -1;
-};
+}
