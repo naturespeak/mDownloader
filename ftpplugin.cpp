@@ -31,6 +31,10 @@
 
 using namespace std;
 
+#if WIN32
+#define snprintf sprintf_s
+#endif
+
 int
 FtpPlugin::get_info(Task *task)
 {
