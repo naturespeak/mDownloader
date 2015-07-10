@@ -1,9 +1,11 @@
 # mDownloader
-mDownloader: A Multiple-Threads GUI Download Accelerator Based on Qt, and the torrent program in Qt Examples.
+mDownloader: A Cross-Platform Multiple-Threads GUI Download Accelerator Based on Qt, and the torrent program in Qt Examples.
 It is fast, with maximum 99 threads do the downloading job at the same time, takes full advantage of your network resources when does HTTP/HTTPS/FTP downloading. 
 And it supports BitTorrent protocol(in the BitTorrent branch).
 
 # How to build
+
+Under Windows:
 
 1. Tools that you will need
 
@@ -17,6 +19,14 @@ And it supports BitTorrent protocol(in the BitTorrent branch).
 
 3. Use Qt Creator to open mDownloader.pro and build
 
+Under Ubuntu 14.04:
+
+1. Sudo apt-get install qtcreator
+2. Use Qt Creator to open mDownloader.pro and build
+
+# Automated Testing
+
+All tests are under folder test. You'd better run the tests under Windows 7, because some wierd random errors happen when I run them under Ubuntu 14.04.
 
 # Latest official build 
 
