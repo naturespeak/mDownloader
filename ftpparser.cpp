@@ -30,6 +30,8 @@
 #include "header.h"
 #include <time.h>
 
+#include <QDateTime>
+
 using namespace std;
 
 FtpParser::FtpParser()
@@ -221,15 +223,11 @@ FtpParser::process_unix(char *line)
 		tmp.tm_hour = i;
 		line ++;
 		tmp.tm_min = atoi(line);
-		while(ISDIGIT(*line)) line ++;
-		// set the right year
-        __time32_t curr = ::time(NULL);
-		struct tm curr_tm;
-        _gmtime32_s(&curr_tm, &curr);
-		tmp.tm_year = curr_tm.tm_year;
+        QDateTime dt;
+        tmp.tm_year = dt.currentDateTime().date().year();
 		time = mktime(&tmp);
-		if(time > curr){
-			tmp.tm_year = curr_tm.tm_year - 1;
+        if(time > dt.currentDateTime().currentDateTime().toTime_t()){
+            tmp.tm_year = dt.currentDateTime().date().year() - 1;
 			time = mktime(&tmp);
 		}
 	}else if(ISBLANK(*line)){

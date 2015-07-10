@@ -23,7 +23,6 @@
 
 #include <sys/stat.h>
 #include <errno.h>
-#include <direct.h>
 
 #include "downloader.h"
 #include "macro.h"

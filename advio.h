@@ -36,49 +36,11 @@
 #include <fcntl.h>
 
 #include "macro.h"
-#include <io.h>
 #include <sys/types.h>
 
 
 #include <QFile>
 
-/* class IOStream add timeout option support*/
-
-class IOStream
-{
-public:
-    /* default fd == -1, it is safe */
-    IOStream(int infd=-1);
-    ~IOStream();
-
-    int set_fd(int infd);
-    int get_fd();
-
-    int open(const char *file, int flag=O_RDWR|O_CREAT, int mode=00644);
-    int close();
-
-protected:
-    int fd;
-};
-
-/* extend timeout input & output stream*/
-class BufferStream 
-        : public IOStream
-{
-public:
-    BufferStream(int ifd=-1);
-    //~BufferStream();
-    BufferStream(const BufferStream& that);
-    BufferStream& operator = (const BufferStream& that);
-
-    int set_fd(int infd);
-
-
-protected:
-    char buf[BUFSIZE];
-    char *ptr;
-    int count; // the current buffer size
-};
 
 // this class must be inherited by the base class of the 
 // plugin and the read_data function must be overloaded

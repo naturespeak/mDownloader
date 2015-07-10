@@ -212,7 +212,7 @@ FtpPlugin::recursive_get_dir_list(Task &task, Ftp *ftp, const char *tempfile,
 	while(1){
 		// get the current work directory
 		if(*woff == 0){
-            _snprintf(currdir, 1024, "%s%s",
+            snprintf(currdir, 1024, "%s%s",
                     task.get_dir() ? "/" : "",
                     task.get_dir() ? task.get_dir() : "");
 		}else{

@@ -6,8 +6,8 @@
 #include "hashworker.h"
 
 
-#define TEST_HASH "6f2c0ff4e3cab35bb49312ce88e1a690"
-#define TEST_URL "10.231.14.85/uploads/burpsuite_free_v1.6.jar"
+#define TEST_HASH "9ab9f1c24973f4fa5b3cebb968172169"
+#define TEST_URL "192.168.1.211/uploads/test"
 #define TEMP_FILE "test.test"
 #define REPEAT_TIMES 5
 
