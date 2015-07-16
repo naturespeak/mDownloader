@@ -41,7 +41,7 @@ NewTask::NewTask(QWidget *parent) :
 
     m_dir = QDir::toNativeSeparators(QDir::homePath());
     ui->lineEditUrl->setText(tr("Paste or input the URL of the file you want to download here."));
-    ui->lineEditSaveLocation->setText(m_dir + "\\" + ui->lineEditFileName->text());
+    ui->lineEditSaveLocation->setText(m_dir + QDir::separator() + ui->lineEditFileName->text());
     ui->spinBoxThreadNum->setMinimum(1);
     ui->spinBoxThreadNum->setValue(1);
     connect(ui->lineEditUrl, SIGNAL(textChanged(QString)), this, SLOT(setFileNameSlot(QString)));
@@ -73,13 +73,13 @@ void NewTask::setFileNameSlot(QString Url)
         m_localFileName = "index.html";
     }
     ui->lineEditFileName->setText(/*"file-" + QUuid::createUuid().toString()+ */m_localFileName);
-    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_dir + "\\" +  /*"file-" + QUuid::createUuid().toString()+*/ m_localFileName));
+    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_dir + QDir::separator() +  /*"file-" + QUuid::createUuid().toString()+*/ m_localFileName));
 }
 
 void NewTask::on_pushButtonSetSaveLocation_clicked()
 {
     m_dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::homePath(), QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
-    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_dir + "\\" + ui->lineEditFileName->text()));
+    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_dir + QDir::separator() + ui->lineEditFileName->text()));
 }
 
 
