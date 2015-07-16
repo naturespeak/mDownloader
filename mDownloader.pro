@@ -13,7 +13,6 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindowdownloader.cpp \
     advio.cpp \
     block.cpp \
     debug.cpp \
@@ -30,11 +29,12 @@ SOURCES += main.cpp\
     task.cpp \
     url.cpp \
     utils.cpp \
-    newtask.cpp \
-    errormessagebox.cpp
+    errormessagebox.cpp \
+    status.cpp \
+    ui/mainwindowdownloader.cpp \
+    ui/newtask.cpp
 
-HEADERS  += mainwindowdownloader.h \
-    advio.h \
+HEADERS  +=   advio.h \
     block.h \
     debug.h \
     downloader.h \
@@ -52,11 +52,14 @@ HEADERS  += mainwindowdownloader.h \
     task.h \
     url.h \
     utils.h \
-    newtask.h \
-    errormessagebox.h
+    errormessagebox.h \
+    status.h \
+    ui/mainwindowdownloader.h \
+    ui/newtask.h
 
-FORMS    += mainwindowdownloader.ui \
-    newtask.ui
+FORMS    += \
+    ui/mainwindowdownloader.ui \
+    ui/newtask.ui
 
 
 RESOURCES += \

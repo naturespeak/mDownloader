@@ -21,8 +21,8 @@
  *  2005 by xiaosuo
  */
 
-#include "mainwindowdownloader.h"
-#include "newtask.h"
+#include "ui/mainwindowdownloader.h"
+#include "ui/newtask.h"
 #include "myget.h"
 #include "errormessagebox.h"
 

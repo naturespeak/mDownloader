@@ -34,6 +34,7 @@
 #include "block.h"
 #include "url.h"
 #include "progressbar.h"
+#include "status.h"
 
 
 class Downloader: public QThread

@@ -34,7 +34,7 @@
 #include <QDebug>
 #include <QFileDialog>
 
-#include "utils.h"
+#include "../utils.h"
 
 #include "mainwindowdownloader.h"
 #include "ui_mainwindowdownloader.h"
