@@ -45,7 +45,9 @@ typedef void* (*threadFunction) (void*);
 void
 Downloader::catch_ctrl_c(int /*signo*/)
 {
-    if(is_downloading){
+    qDebug() << endl << "downloadStatus(): " << m_status->downloadStatus();
+    if (m_status->downloadStatus() == Status::Paused)
+    {
         sigint_received = true;
         qDebug() << endl << "sigint_received: " << sigint_received << endl;
     }else{
@@ -59,7 +61,8 @@ Downloader::Downloader(QWidget *parent) :
     QThread(parent)
 {
     sigint_received = false;
-    is_downloading = false;
+    m_status = new Status(this);
+    m_status->setDownloadStatus(Status::Idle);
     plugin = NULL;
     blocks = NULL;
     localPath = NULL;
@@ -426,7 +429,7 @@ Downloader::save_temp_file_exit(void)
 
     if(task.get_file_size() < 0){
         qCritical() <<"!!!You can not continue in further"<<endl;
-        is_downloading = false;
+        m_status->setDownloadStatus(Status::Failed);
         exit(-1); // Is this right?
     }
 
@@ -464,7 +467,7 @@ Downloader::save_temp_file_exit(void)
     tempFile->close();
     delete tempFile;
 
-    is_downloading = false;
+    m_status->setDownloadStatus(Status::Paused);
     QString inforMsg = tr("Downloading paused.");
     emit errorHappened(inforMsg);
     emit done();
@@ -589,7 +592,7 @@ Downloader::file_download(void)
 
     // update loop
     prepare_progress_bar();
-    is_downloading = true;
+    m_status->setDownloadStatus(Status::Downloading);
     while(1){
         if(sigint_received){
             delete[] pb->data;
@@ -674,7 +677,7 @@ Downloader::report_done(double start_time)
     double time;
     QString errorMsg;
 
-    is_downloading = false;
+    m_status->setDownloadStatus(Status::Finished);
     time = get_current_time() - start_time;
     convert_time(buf, time);
     emit set_GuiProgressBarValue(100);
@@ -771,12 +774,14 @@ Downloader::runMyself(QString QUrl)
         qCritical() << "runMyself: QUrl is empty!" << endl;
     }
     start();
+    m_status->setDownloadStatus(Status::Starting);
 }
 
 void
 Downloader::resumeTask(void)
 {
     sigint_received = false;
+    m_status->setDownloadStatus(Status::Starting);
     start();
 }
 
@@ -796,6 +801,7 @@ Downloader::setLocalFileName(QString QFileName)
 void
 Downloader::quit(void)
 {
+    m_status->setDownloadStatus(Status::Paused);
     catch_ctrl_c(2);
 }
 

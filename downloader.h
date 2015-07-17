@@ -110,7 +110,8 @@ class Downloader: public QThread
 		ProgressBar *pb;
         bool is_dirSetted;
         bool sigint_received;
-        bool is_downloading;
+
+        Status *m_status;
 };
 
 class DownloadWorker : public QObject
