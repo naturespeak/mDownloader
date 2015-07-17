@@ -3,6 +3,8 @@
 **
 ** Copyright 2012, 2013 Alireza Savand <alireza.savand@gmail.com>
 **
+** Imported to mDownloader and Modified by Richard Qin<qc2105@qq.com> in 2015.
+**
 ** yoDownet is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 3 of the License, or
@@ -48,18 +50,7 @@ public:
         Paused
     };
 
-    QString remainingTime() const;
-    QString downloadRate() const;
     QString downloadModeString() const;
-
-    void setFileAlreadyBytes(const qint64 fileAlreadyBytes);
-    void setBytesTotal(const qint64 totalLength);
-
-    qint64 bytesTotal() const;
-    void setBytesReceived(const qint64 completedLength);
-
-    qint64 bytesReceived() const;
-    int progress() const;
 
     void setDownloadMode(const DownloadMode dlMode);
     DownloadMode downloadMode() const;
@@ -67,18 +58,7 @@ public:
     void setDownloadStatus(const DownloadStatus dlStatus);
     DownloadStatus downloadStatus() const;
 
-public slots:
-    void startTime();
-    void updateFileStatus(qint64 bytesReceived, qint64 bytesTotal);
-
 private:
-    QString _remainingTime;
-    qint64 _fileAlreadyBytes;
-    qint64 _bytesTotal;
-    qint64 _bytesReceived;
-    int _downloadRate;
-    int _progress;
-    QTime *_startTime;
     DownloadMode _dlMode;
     DownloadStatus _dlStatus;
 

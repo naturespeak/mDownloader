@@ -174,6 +174,9 @@ Downloader::init_threads_from_mg(void)
     int blockSize = 0;
     QString error;
 
+
+    m_status->setDownloadMode(Status::ResumeDownload);
+
     readData.clear();
 
     readData.setNum(task.get_file_size());
@@ -252,6 +255,8 @@ Downloader::init_threads_from_info(void)
 {
     qint64 block_size;
     int i;
+
+    m_status->setDownloadMode(Status::NewDownload);
 
     threadNum = task.get_threadNum()> 0 ? task.get_threadNum() : 1;
     block_size = task.get_file_size() / threadNum;
