@@ -36,15 +36,15 @@
 
 #include "../utils.h"
 
-#include "mainwindowdownloader.h"
-#include "ui_mainwindowdownloader.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 extern void
 catch_ctrl_c(int signo);
 
-MainWindowDownloader::MainWindowDownloader(QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindowDownloader),
+    ui(new Ui::MainWindow),
     quitDialog(0), saveChanges(false)
 {
     ui->setupUi(this);
@@ -58,62 +58,62 @@ MainWindowDownloader::MainWindowDownloader(QWidget *parent) :
     QMetaObject::invokeMethod(this, "loadSettings", Qt::QueuedConnection);
 }
 
-MainWindowDownloader::~MainWindowDownloader()
+MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-void MainWindowDownloader::on_pushButtonNew_clicked()
+void MainWindow::on_pushButtonNew_clicked()
 {
     emit newTaskShow();
 }
 
-void MainWindowDownloader::set_ProgressBarMaximum(int maximum)
+void MainWindow::set_ProgressBarMaximum(int maximum)
 {
     ui->progressBar->setMaximum(maximum);
 }
 
-void MainWindowDownloader::set_ProgressBarMinimum(int minimum)
+void MainWindow::set_ProgressBarMinimum(int minimum)
 {
     ui->progressBar->setMinimum(minimum);
 }
 
-void MainWindowDownloader::set_ProgressBarValue(int value)
+void MainWindow::set_ProgressBarValue(int value)
 {
     ui->progressBar->setValue(value);
 }
 
-void MainWindowDownloader::setDownloadedFileName(QString FileName)
+void MainWindow::setDownloadedFileName(QString FileName)
 {
     ui->labelFileName->setText(FileName);
 }
 
-void MainWindowDownloader::setDownloadedDirectory(QString Directory)
+void MainWindow::setDownloadedDirectory(QString Directory)
 {
     m_downloadedDirectory = Directory;
 }
 
-void MainWindowDownloader::set_labelTotal(QString total)
+void MainWindow::set_labelTotal(QString total)
 {
     ui->labelTotalValue->setText(total);
 }
 
-void MainWindowDownloader::set_labelDownloaded(QString downloaded)
+void MainWindow::set_labelDownloaded(QString downloaded)
 {
     ui->labelDownloadedValue->setText(downloaded);
 }
 
-void MainWindowDownloader::set_labelDownloadSpeed(QString speed)
+void MainWindow::set_labelDownloadSpeed(QString speed)
 {
     ui->labelSpeedValue->setText(speed);
 }
 
-void MainWindowDownloader::set_labelRemainingTime(QString remainingTime)
+void MainWindow::set_labelRemainingTime(QString remainingTime)
 {
     ui->labelReaminingTimeValue->setText(remainingTime);
 }
 
-void MainWindowDownloader::on_error_happens(QString errorMsg)
+void MainWindow::on_error_happens(QString errorMsg)
 {
     // When the downloading succeeds m_has_error_happend should keep to be false.
     if (!errorMsg.contains(tr("Download successfully in"))) {
@@ -123,12 +123,12 @@ void MainWindowDownloader::on_error_happens(QString errorMsg)
     }
 }
 
-void MainWindowDownloader::on_pushButtonOpenDir_clicked()
+void MainWindow::on_pushButtonOpenDir_clicked()
 {
     QDesktopServices::openUrl(QUrl("file:///" + m_downloadedDirectory));
 }
 
-void MainWindowDownloader::on_pushButtonPause_clicked()
+void MainWindow::on_pushButtonPause_clicked()
 {
     if (m_is_downloading_paused == false) { // into state PAUSED
         emit m_quit();
@@ -146,7 +146,7 @@ void MainWindowDownloader::on_pushButtonPause_clicked()
     }
 }
 
-void MainWindowDownloader::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug() << "closeEvent is called";
 
@@ -165,7 +165,7 @@ void MainWindowDownloader::closeEvent(QCloseEvent *event)
     }
 }
 
-void MainWindowDownloader::on_downloading_finished(void)
+void MainWindow::on_downloading_finished(void)
 {
     // into state NO DOWNLOADING
     if (m_has_error_happend == false) {
@@ -175,7 +175,7 @@ void MainWindowDownloader::on_downloading_finished(void)
     }
 }
 
-void MainWindowDownloader::on_downloading_started(QString)
+void MainWindow::on_downloading_started(QString)
 {
     // into state DOWNLOADING
     m_is_downloading_started = true;
@@ -185,7 +185,7 @@ void MainWindowDownloader::on_downloading_started(QString)
     ui->pushButtonPause->setDisabled(false);
 }
 
-void MainWindowDownloader::on_pushButtonAbout_clicked()
+void MainWindow::on_pushButtonAbout_clicked()
 {
     QString about;
     about = tr("mDownloader: A GUI download accelerator.");

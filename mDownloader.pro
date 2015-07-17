@@ -31,8 +31,8 @@ SOURCES += main.cpp\
     utils.cpp \
     errormessagebox.cpp \
     status.cpp \
-    ui/mainwindowdownloader.cpp \
-    ui/newtask.cpp
+    ui/newtask.cpp \
+    ui/mainwindow.cpp
 
 HEADERS  +=   advio.h \
     block.h \
@@ -54,12 +54,12 @@ HEADERS  +=   advio.h \
     utils.h \
     errormessagebox.h \
     status.h \
-    ui/mainwindowdownloader.h \
-    ui/newtask.h
+    ui/newtask.h \
+    ui/mainwindow.h
 
 FORMS    += \
-    ui/mainwindowdownloader.ui \
-    ui/newtask.ui
+    ui/newtask.ui \
+    ui/mainwindow.ui
 
 
 RESOURCES += \

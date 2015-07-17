@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindowDownloader</class>
- <widget class="QMainWindow" name="MainWindowDownloader">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -20,7 +20,7 @@
    <string>mDownloader</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="mDownloader.qrc">
+   <iconset resource="../mDownloader.qrc">
     <normaloff>:/icon/motocool.jpg</normaloff>:/icon/motocool.jpg</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -164,7 +164,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="mDownloader.qrc"/>
+  <include location="../mDownloader.qrc"/>
  </resources>
  <connections/>
 </ui>

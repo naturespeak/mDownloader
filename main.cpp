@@ -21,7 +21,7 @@
  *  2005 by xiaosuo
  */
 
-#include "ui/mainwindowdownloader.h"
+#include "ui/mainwindow.h"
 #include "ui/newtask.h"
 #include "myget.h"
 #include "errormessagebox.h"
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
     QDesktopWidget qd;
 
-    MainWindowDownloader w;
+    MainWindow w;
     w.set_ProgressBarValue(0);
     w.move((qd.availableGeometry(-1).width()-w.width())/2, (qd.availableGeometry(-1).height()-w.height())/2);
     w.show();

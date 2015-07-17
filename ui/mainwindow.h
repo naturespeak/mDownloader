@@ -21,8 +21,8 @@
  *  2005 by xiaosuo
  */
 
-#ifndef MAINWINDOWDOWNLOADER_H
-#define MAINWINDOWDOWNLOADER_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QString>
@@ -39,16 +39,16 @@ class QSlider;
 QT_END_NAMESPACE
 
 namespace Ui {
-class MainWindowDownloader;
+class MainWindow;
 }
 
-class MainWindowDownloader : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindowDownloader(QWidget *parent = 0);
-    ~MainWindowDownloader();
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
 public slots:
     void set_ProgressBarMinimum(int);
@@ -83,7 +83,7 @@ signals:
 private:
     bool m_is_torrent_mode;
     qint64 speedBytesPerSecond;
-    Ui::MainWindowDownloader *ui;
+    Ui::MainWindow *ui;
     QString m_downloadedFileName;
     QString m_downloadedDirectory;
     bool m_is_downloading_finished;
@@ -99,4 +99,4 @@ private:
 
 };
 
-#endif // MAINWINDOWDOWNLOADER_H
+#endif // MAINWINDOW_H
