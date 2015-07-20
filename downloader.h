@@ -51,6 +51,8 @@ class Downloader: public QThread
         static int download_thread(Downloader *downloader, QThread *ptr_thread);
         int self(QThread *);
 
+        Status *m_status;   // Fix me: be private.
+
     public slots:
         void runMyself(QString);
         void resumeTask(void);
@@ -111,7 +113,7 @@ class Downloader: public QThread
         bool is_dirSetted;
         bool sigint_received;
 
-        Status *m_status;
+
 };
 
 class DownloadWorker : public QObject

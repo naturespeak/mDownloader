@@ -1,5 +1,13 @@
 <RCC>
-  <qresource prefix="icon">
-    <file>motocool.jpg</file>
-  </qresource>
+    <qresource prefix="/">
+        <file>ui/icons/bottom.png</file>
+        <file>ui/icons/edit_add.png</file>
+        <file>ui/icons/edit_remove.png</file>
+        <file>ui/icons/exit.png</file>
+        <file>ui/icons/motocool.jpg</file>
+        <file>ui/icons/player_pause.png</file>
+        <file>ui/icons/player_play.png</file>
+        <file>ui/icons/player_stop.png</file>
+        <file>ui/icons/stop.png</file>
+    </qresource>
 </RCC>

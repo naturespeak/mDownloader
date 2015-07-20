@@ -29,6 +29,8 @@
 #include <QMessageBox>
 
 #include <QProgressDialog>
+#include "../downloader.h"
+#include "jobview.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -38,9 +40,6 @@ class QProgressDialog;
 class QSlider;
 QT_END_NAMESPACE
 
-namespace Ui {
-class MainWindow;
-}
 
 class MainWindow : public QMainWindow
 {
@@ -50,12 +49,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    const Downloader *downloaderForRow(int row) const;
+
 public slots:
     void set_ProgressBarMinimum(int);
     void set_ProgressBarValue(int);
     void set_ProgressBarMaximum(int);
-    void setDownloadedFileName(QString);
-    void setDownloadedDirectory(QString);
     void set_labelTotal(QString);
     void set_labelDownloaded(QString);
     void set_labelDownloadSpeed(QString);
@@ -73,7 +73,16 @@ private slots:
     void on_downloading_finished(void);
     void on_downloading_started(QString);
 
-    void on_pushButtonAbout_clicked();
+    void about();
+    void setActionsEnabled();
+
+
+    // First version multi-jobs UI
+    bool addJob();
+    void removeJob();
+    void pauseJob();
+    void moveJobUp();
+    void moveJobDown();
 
 signals:
     void newTaskShow(void);
@@ -81,22 +90,26 @@ signals:
     void resumeTask(void);
 
 private:
-    bool m_is_torrent_mode;
     qint64 speedBytesPerSecond;
-    Ui::MainWindow *ui;
-    QString m_downloadedFileName;
-    QString m_downloadedDirectory;
-    bool m_is_downloading_finished;
-    bool m_is_downloading_started;
     bool m_has_error_happend;
     QMessageBox msgBox;
-    bool m_is_downloading_paused;
 
     QProgressDialog *quitDialog;
 
     bool saveChanges;
     QString lastDirectory;
 
+    JobView *jobView;
+    QAction *pauseJobAction;
+    QAction *removeJobAction;
+
+    struct Job {
+        Downloader *downloader;
+    };
+
+    QList<Job> jobs;
+    int jobsStopped;
+    int jobsToStop;
 };
 
 #endif // MAINWINDOW_H

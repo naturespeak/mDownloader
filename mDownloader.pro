@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     errormessagebox.cpp \
     status.cpp \
     ui/newtask.cpp \
-    ui/mainwindow.cpp
+    ui/mainwindow.cpp \
+    ui/jobview.cc
 
 HEADERS  +=   advio.h \
     block.h \
@@ -55,11 +56,11 @@ HEADERS  +=   advio.h \
     errormessagebox.h \
     status.h \
     ui/newtask.h \
-    ui/mainwindow.h
+    ui/mainwindow.h \
+    ui/jobview.h
 
 FORMS    += \
-    ui/newtask.ui \
-    ui/mainwindow.ui
+    ui/newtask.ui
 
 
 RESOURCES += \

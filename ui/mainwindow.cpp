@@ -33,34 +33,150 @@
 #include <QSettings>
 #include <QDebug>
 #include <QFileDialog>
+#include <QTreeWidget>
+#include <QHeaderView>
+#include <QApplication>
+#include <QMenuBar>
+#include <QToolBar>
 
+#include "../status.h"
 #include "../utils.h"
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 extern void
 catch_ctrl_c(int signo);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
     quitDialog(0), saveChanges(false)
 {
-    ui->setupUi(this);
-    m_downloadedDirectory = QDir::homePath();
-    m_is_downloading_started = false;
-    m_is_downloading_finished = true;
-    m_is_downloading_paused = true;
     m_has_error_happend = false;
-    m_is_torrent_mode = false;
-    ui->pushButtonPause->setDisabled(true);
     QMetaObject::invokeMethod(this, "loadSettings", Qt::QueuedConnection);
+
+    // Initiallize headers
+    QStringList headers;
+    headers << tr("Name") << tr("Downloaded/Total") << tr("Progress") << tr("Speed")
+            << tr("Status");
+
+    // Main job list
+    jobView = new JobView(this);
+    jobView->setHeaderLabels(headers);
+    jobView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    jobView->setAlternatingRowColors(true);
+    jobView->setRootIsDecorated(false);
+    setCentralWidget(jobView);
+
+    // Set header resize modes and initial section sizes
+    QFontMetrics fm = fontMetrics();
+    QHeaderView *header = jobView->header();
+    header->resizeSection(0, fm.width("typical-name-length-for-a-download-task"));
+    header->resizeSection(1, fm.width(headers.at(1) + "100MB/999MB"));
+    header->resizeSection(2, fm.width(headers.at(2) + "100%"));
+    header->resizeSection(3, qMax(fm.width(headers.at(3) + "   "), fm.width(" 1023.0 KB/s")));
+    header->resizeSection(4, qMax(fm.width(headers.at(4) + "   "), fm.width(tr("Downloading") + "   ")));
+
+    // Create common actions
+    QAction *newJobAction = new QAction(QIcon(":/ui/icons/bottom.png"), tr("Add &new job"), this);
+    pauseJobAction = new QAction(QIcon(":/ui/icons/player_pause.png"), tr("&Pause job"), this);
+    removeJobAction = new QAction(QIcon(":/ui/icons/player_stop.png"), tr("&Remove job"), this);
+
+    // File menu
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(newJobAction);
+    fileMenu->addAction(pauseJobAction);
+    fileMenu->addAction(removeJobAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(QIcon(":/ui/icons/exit.png"), tr("E&xit"), this, SLOT(close()));
+
+    // Help Menu
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&About"), this, SLOT(about()));
+
+    // Top toolbar
+    QToolBar *topBar = new QToolBar(tr("Tools"));
+    addToolBar(Qt::TopToolBarArea, topBar);
+    topBar->setMovable(false);
+    topBar->addAction(newJobAction);
+    topBar->addAction(pauseJobAction);
+    topBar->addAction(removeJobAction);
+
+    // Set up connections
+    connect(jobView, SIGNAL(itemSelectionChanged()),
+            this, SLOT(setActionsEnabled()));
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+
+}
+
+void MainWindow::setActionsEnabled()
+{
+    // Find the view item and downloader for the current row, and update
+    // the states of the actions.
+    QTreeWidgetItem *item = 0;
+    if (!jobView->selectedItems().isEmpty())
+    {
+        item = jobView->selectedItems().first();
+    }
+    Downloader *downloader = item ? jobs.at(jobView->indexOfTopLevelItem(item)).downloader : 0;
+    bool pauseEnabled = downloader && ((downloader->m_status->downloadStatus() == Status::Paused)
+                                       || (downloader->m_status->downloadStatus() == Status::Idle));
+
+    removeJobAction->setEnabled(item != 0);
+    pauseJobAction->setEnabled(item != 0 && pauseEnabled);
+
+    if (downloader && downloader->m_status->downloadStatus() == Status::Paused)
+    {
+        pauseJobAction->setIcon(QIcon(":/ui/icons/player_play.png"));
+        pauseJobAction->setText(tr("Resume job"));
+    }
+    else
+    {
+        pauseJobAction->setIcon(QIcon(":/ui/icons/player_pause.png"));
+        pauseJobAction->setText(tr("Pause job"));
+    }
+}
+
+QSize MainWindow::sizeHint() const
+{
+    const QHeaderView *header = jobView->header();
+
+    // Add up the sizes of all header sections. The last section is
+    // stretched, so its size is relative to the size of the width;
+    // instead of counting it, we count the size of its largest value.
+    int width = fontMetrics().width(tr("Downloading") + "  ");
+    for (int i = 0; i < header->count() - 1; ++i)
+        width += header->sectionSize(i);
+
+    return QSize(width, QMainWindow::sizeHint().height())
+        .expandedTo(QApplication::globalStrut());
+}
+
+bool MainWindow::addJob()
+{
+    return true;
+}
+
+void MainWindow::removeJob()
+{
+
+}
+
+void MainWindow::pauseJob()
+{
+
+}
+
+void MainWindow::moveJobUp()
+{
+
+}
+
+void MainWindow::moveJobDown()
+{
+
 }
 
 void MainWindow::on_pushButtonNew_clicked()
@@ -68,49 +184,44 @@ void MainWindow::on_pushButtonNew_clicked()
     emit newTaskShow();
 }
 
+const Downloader *MainWindow::downloaderForRow(int row) const
+{
+    return jobs.at(row).downloader;
+}
+
 void MainWindow::set_ProgressBarMaximum(int maximum)
 {
-    ui->progressBar->setMaximum(maximum);
+//    ui->progressBar->setMaximum(maximum);
 }
 
 void MainWindow::set_ProgressBarMinimum(int minimum)
 {
-    ui->progressBar->setMinimum(minimum);
+//    ui->progressBar->setMinimum(minimum);
 }
 
 void MainWindow::set_ProgressBarValue(int value)
 {
-    ui->progressBar->setValue(value);
-}
-
-void MainWindow::setDownloadedFileName(QString FileName)
-{
-    ui->labelFileName->setText(FileName);
-}
-
-void MainWindow::setDownloadedDirectory(QString Directory)
-{
-    m_downloadedDirectory = Directory;
+//    ui->progressBar->setValue(value);
 }
 
 void MainWindow::set_labelTotal(QString total)
 {
-    ui->labelTotalValue->setText(total);
+//    ui->labelTotalValue->setText(total);
 }
 
 void MainWindow::set_labelDownloaded(QString downloaded)
 {
-    ui->labelDownloadedValue->setText(downloaded);
+//    ui->labelDownloadedValue->setText(downloaded);
 }
 
 void MainWindow::set_labelDownloadSpeed(QString speed)
 {
-    ui->labelSpeedValue->setText(speed);
+//    ui->labelSpeedValue->setText(speed);
 }
 
 void MainWindow::set_labelRemainingTime(QString remainingTime)
 {
-    ui->labelReaminingTimeValue->setText(remainingTime);
+//    ui->labelReaminingTimeValue->setText(remainingTime);
 }
 
 void MainWindow::on_error_happens(QString errorMsg)
@@ -125,72 +236,37 @@ void MainWindow::on_error_happens(QString errorMsg)
 
 void MainWindow::on_pushButtonOpenDir_clicked()
 {
-    QDesktopServices::openUrl(QUrl("file:///" + m_downloadedDirectory));
+//    QDesktopServices::openUrl(QUrl("file:///" + m_downloadedDirectory));
 }
 
 void MainWindow::on_pushButtonPause_clicked()
 {
-    if (m_is_downloading_paused == false) { // into state PAUSED
-        emit m_quit();
-        m_is_downloading_paused = true;
-        m_is_downloading_started = true;
-        m_is_downloading_finished = true;
-        ui->pushButtonPause->setText(tr("Resume"));
-    }else{
-        //Resume the task, into state DOWNLOADING
-        ui->pushButtonPause->setText(tr("Pause"));
-        emit resumeTask();
-        m_is_downloading_paused = false;
-        m_is_downloading_finished = false;
-        m_is_downloading_started = true;
-    }
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug() << "closeEvent is called";
 
-    if (m_is_downloading_started == false && m_is_downloading_finished == true && m_is_downloading_paused == true) {        // Not downloading
-        event->accept();
-    }else if (m_is_downloading_started == true && m_is_downloading_finished == true && m_is_downloading_paused == true) {   // Paused
-        event->accept();
-    }else if (m_is_downloading_started == true && m_is_downloading_finished == false && m_is_downloading_paused == false) { // Downloading
-        msgBox.setText("Downloading is in progress. Please press Pause first.");
-        msgBox.exec();
-        event->ignore();
-    }else {                                                                                      // Impossible case, Defending programming
-        msgBox.setText("Downloading is in progress. Please press Pause first.");
-        msgBox.exec();
-        event->ignore();
-    }
+
 }
 
 void MainWindow::on_downloading_finished(void)
 {
-    // into state NO DOWNLOADING
-    if (m_has_error_happend == false) {
-        m_is_downloading_started = false;
-        m_is_downloading_finished = true;
-        m_is_downloading_paused = true;
-    }
+
 }
 
 void MainWindow::on_downloading_started(QString)
 {
-    // into state DOWNLOADING
-    m_is_downloading_started = true;
-    m_is_downloading_finished = false;
-    m_is_downloading_paused = false;
-    m_has_error_happend = false;
-    ui->pushButtonPause->setDisabled(false);
+
 }
 
-void MainWindow::on_pushButtonAbout_clicked()
+void MainWindow::about()
 {
     QString about;
     about = tr("mDownloader: A GUI download accelerator.");
     about += QChar::LineSeparator;
-    about += tr("Version: 1.0.1Build005.");
+    about += tr("Version: 1.1.0Build001.");
     about += QChar::LineSeparator;
     about += tr("Written by Chuan Qin. Email: qc2105@qq.com");
     about += QChar::LineSeparator;
