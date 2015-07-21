@@ -41,6 +41,7 @@
 
 #include "../status.h"
 #include "../utils.h"
+#include "newtask.h"
 
 #include "mainwindow.h"
 
@@ -49,10 +50,12 @@ catch_ctrl_c(int signo);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    quitDialog(0), saveChanges(false)
+    quitDialog(0), saveChanges(false),
+    newJobFileName(""), newJobDestinationDirectory("")
 {
     m_has_error_happend = false;
     QMetaObject::invokeMethod(this, "loadSettings", Qt::QueuedConnection);
+    setWindowIcon(QIcon(":/ui/icons/motocool.jpg"));
 
     // Initiallize headers
     QStringList headers;
@@ -104,6 +107,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set up connections
     connect(jobView, SIGNAL(itemSelectionChanged()),
             this, SLOT(setActionsEnabled()));
+    connect(newJobAction, SIGNAL(triggered()),
+            this, SLOT(addJob()));
 }
 
 MainWindow::~MainWindow()
@@ -154,9 +159,61 @@ QSize MainWindow::sizeHint() const
         .expandedTo(QApplication::globalStrut());
 }
 
+void MainWindow::set_newJobFileName(QString newFileName)
+{
+    newJobFileName = newFileName;
+}
+
+void MainWindow::set_newJobDownloadedDirectory(QString newDownDir)
+{
+    newJobDestinationDirectory = newDownDir;
+}
+
 bool MainWindow::addJob()
 {
+    NewTask *newTask = new NewTask(this);
+//    connect(newTask, SIGNAL(setFileName(QString)), this, SLOT(set_newJobFileName(QString)));
+//    connect(newTask, SIGNAL(setDownloadedDirectory(QString)),
+//            this, SLOT(set_newJobDownloadedDirectory(QString)));
+
+    connect(newTask, SIGNAL(newJob(QString,QString,QString,int)),
+            this, SLOT(addJob(QString,QString,QString,int)));
+    newTask->show();
     return true;
+}
+
+void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int threadNUM)
+{
+    // Check if the job is already being downloaded.
+    foreach(Job job, jobs)
+    {
+        if (job.fileName == fileName && job.destinationDir == DownDir)
+        {
+            QMessageBox::warning(this, tr("Already downloading"),
+                                 tr("The file %1 is already being downloaded.")
+                                 .arg(fileName));
+            return;
+        }
+    }
+
+    //Create a new downloader
+    Downloader *downloader = new Downloader(this);
+    downloader->setLocalFileName(fileName);
+    downloader->setLocalDirectory(DownDir);
+    downloader->setThreadNum(threadNUM);
+
+    // Setup the downlader connections
+
+    // Add the downloader to the list of downloading jobs.
+    Job job;
+    job.downloader = downloader;
+    job.fileName = fileName;
+    job.destinationDir = DownDir;
+    jobs << job;
+
+    // Create and add a row in the job view for this download.
+    QTreeWidgetItem *item = new QTreeWidgetItem(jobView);
+
 }
 
 void MainWindow::removeJob()

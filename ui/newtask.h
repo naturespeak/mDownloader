@@ -54,6 +54,7 @@ private:
 
 
 signals:
+    void newJob(QString fileName, QString DownloadedDirectory, QString URL, int threadNum);
     void runDownloader(QString);
     void setFileName(QString);
     void setSaveLocation(QString);

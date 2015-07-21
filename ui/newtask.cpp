@@ -64,6 +64,7 @@ void NewTask::on_buttonBoxWhetherOk_accepted()
     emit setSaveLocation(ui->lineEditSaveLocation->text());
     emit setThreadNum(ui->spinBoxThreadNum->value());
     emit runDownloader(ui->lineEditUrl->text());
+    emit newJob(ui->lineEditFileName->text(), m_dir, ui->lineEditUrl->text(), ui->spinBoxThreadNum->value());
 }
 
 void NewTask::setFileNameSlot(QString Url)

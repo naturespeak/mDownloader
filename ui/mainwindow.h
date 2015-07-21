@@ -61,6 +61,9 @@ public slots:
     void set_labelDownloadSpeed(QString);
     void set_labelRemainingTime(QString);
     void on_error_happens(QString);
+    void set_newJobFileName(QString);
+    void set_newJobDownloadedDirectory(QString);
+    void addJob(QString fileName, QString DownDir, QString URL, int threadNUM);
 
 private slots:
     void on_pushButtonNew_clicked();
@@ -104,8 +107,15 @@ private:
     QAction *removeJobAction;
 
     struct Job {
+        QString fileName;
+        QString destinationDir;
+        QString url;
+        int threadNum;
         Downloader *downloader;
     };
+
+    QString newJobFileName;
+    QString newJobDestinationDirectory;
 
     QList<Job> jobs;
     int jobsStopped;
