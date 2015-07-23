@@ -204,6 +204,7 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
 
     // Setup the downlader connections
 
+
     // Add the downloader to the list of downloading jobs.
     Job job;
     job.downloader = downloader;
@@ -214,6 +215,19 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
     // Create and add a row in the job view for this download.
     QTreeWidgetItem *item = new QTreeWidgetItem(jobView);
 
+    QString baseFileName = QFileInfo(fileName).baseName();
+
+    item->setText(0, baseFileName);
+    item->setToolTip(0, tr("File: %1<br>Destination: %2")
+                     .arg(baseFileName).arg(DownDir));
+    item->setText(1, tr("0/0"));
+    item->setText(2, "0");
+    item->setText(3, "0.0 KB/s");
+    item->setText(4, tr("Idle"));
+    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    item->setTextAlignment(1, Qt::AlignHCenter);
+
+    downloader->runMyself(URL);
 }
 
 void MainWindow::removeJob()
