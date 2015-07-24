@@ -82,40 +82,10 @@ int main(int argc, char *argv[])
     QDesktopWidget qd;
 
     MainWindow w;
-    w.set_ProgressBarValue(0);
+
     w.move((qd.availableGeometry(-1).width()-w.width())/2, (qd.availableGeometry(-1).height()-w.height())/2);
     w.show();
 
-//    NewTask newTask;
-//    QObject::connect(&w, SIGNAL(newTaskShow()), &newTask, SLOT(showMyself()));
-//    QObject::connect(&newTask, SIGNAL(setFileName(QString)), &w, SLOT(setDownloadedFileName(QString)));
-//    QObject::connect(&newTask, SIGNAL(setDownloadedDirectory(QString)), &w, SLOT(setDownloadedDirectory(QString)));
-
-//    ErrorMessageBox errMsgBox;
-//    Downloader downloader;
-
-//    QObject::connect(&downloader, SIGNAL(set_GuiProgressBarMinimum(int)), &w, SLOT(set_ProgressBarMinimum(int)));
-//    QObject::connect(&downloader, SIGNAL(set_GuiProgressBarValue(int)), &w, SLOT(set_ProgressBarValue(int)));
-//    QObject::connect(&downloader, SIGNAL(set_GuiProgressBarMaximum(int)), &w, SLOT(set_ProgressBarMaximum(int)));
-//    QObject::connect(&downloader, SIGNAL(set_GuiLabelTotal(QString)), &w, SLOT(set_labelTotal(QString)));
-//    QObject::connect(&downloader, SIGNAL(set_GuiLabelDownloaded(QString)), &w, SLOT(set_labelDownloaded(QString)));
-//    QObject::connect(&downloader, SIGNAL(set_GuiLabelSpeed(QString)), &w, SLOT(set_labelDownloadSpeed(QString)));
-//    QObject::connect(&downloader, SIGNAL(set_GuiLabelRemainingTime(QString)), &w, SLOT(set_labelRemainingTime(QString)));
-
-//    QObject::connect(&downloader, SIGNAL(errorHappened(QString)), &errMsgBox, SLOT(DisplayError(QString)));
-//    QObject::connect(&downloader, SIGNAL(errorHappened(QString)), &w, SLOT(on_error_happens(QString)));
-
-//    QObject::connect(&newTask, SIGNAL(setFileName(QString)), &downloader, SLOT(setLocalFileName(QString)));
-//    QObject::connect(&newTask, SIGNAL(setDownloadedDirectory(QString)), &downloader, SLOT(setLocalDirectory(QString)));
-//    QObject::connect(&newTask, SIGNAL(setThreadNum(int)), &downloader, SLOT(setThreadNum(int)));
-//    QObject::connect(&w, SIGNAL(resumeTask()), &downloader, SLOT(resumeTask()));
-//    QObject::connect(&newTask, SIGNAL(runDownloader(QString)), &w, SLOT(on_downloading_started(QString)));
-//    QObject::connect(&newTask, SIGNAL(runDownloader(QString)), &downloader, SLOT(runMyself(QString)));
-
-
-
-//    QObject::connect(&w, SIGNAL(m_quit()), &downloader, SLOT(quit()));
-//    QObject::connect(&downloader, SIGNAL(done()), &w, SLOT(on_downloading_finished()));
 
     return a.exec();
 }

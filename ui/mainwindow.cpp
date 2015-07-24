@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     header->resizeSection(1, fm.width(headers.at(1) + "100MB/999MB"));
     header->resizeSection(2, fm.width(headers.at(2) + "100%"));
     header->resizeSection(3, qMax(fm.width(headers.at(3) + "   "), fm.width(" 1023.0 KB/s")));
-    header->resizeSection(4, qMax(fm.width(headers.at(4) + "   "), fm.width(tr("Downloading") + "   ")));
+    header->resizeSection(4, qMax(fm.width(headers.at(4) + "   "), fm.width(tr("Downloading  ") + "   ")));
     header->resizeSection(5, qMax(fm.width(headers.at(5) + "   "), fm.width(tr("--:--") + "   ")));
 
     // Create common actions
@@ -173,9 +173,6 @@ void MainWindow::set_newJobDownloadedDirectory(QString newDownDir)
 bool MainWindow::addJob()
 {
     NewTask *newTask = new NewTask(this);
-//    connect(newTask, SIGNAL(setFileName(QString)), this, SLOT(set_newJobFileName(QString)));
-//    connect(newTask, SIGNAL(setDownloadedDirectory(QString)),
-//            this, SLOT(set_newJobDownloadedDirectory(QString)));
 
     connect(newTask, SIGNAL(newJob(QString,QString,QString,int)),
             this, SLOT(addJob(QString,QString,QString,int)));
@@ -336,50 +333,11 @@ void MainWindow::updateRemainingTime(QString remainingTime)
         item->setText(5, remainingTime);
 }
 
-void MainWindow::on_pushButtonNew_clicked()
-{
-    emit newTaskShow();
-}
-
 const Downloader *MainWindow::downloaderForRow(int row) const
 {
     return jobs.at(row).downloader;
 }
 
-void MainWindow::set_ProgressBarMaximum(int maximum)
-{
-//    ui->progressBar->setMaximum(maximum);
-}
-
-void MainWindow::set_ProgressBarMinimum(int minimum)
-{
-//    ui->progressBar->setMinimum(minimum);
-}
-
-void MainWindow::set_ProgressBarValue(int value)
-{
-//    ui->progressBar->setValue(value);
-}
-
-void MainWindow::set_labelTotal(QString total)
-{
-//    ui->labelTotalValue->setText(total);
-}
-
-void MainWindow::set_labelDownloaded(QString downloaded)
-{
-//    ui->labelDownloadedValue->setText(downloaded);
-}
-
-void MainWindow::set_labelDownloadSpeed(QString speed)
-{
-//    ui->labelSpeedValue->setText(speed);
-}
-
-void MainWindow::set_labelRemainingTime(QString remainingTime)
-{
-//    ui->labelReaminingTimeValue->setText(remainingTime);
-}
 
 void MainWindow::on_error_happens(QString errorMsg)
 {
@@ -391,32 +349,16 @@ void MainWindow::on_error_happens(QString errorMsg)
     }
 }
 
-void MainWindow::on_pushButtonOpenDir_clicked()
-{
+
 //    QDesktopServices::openUrl(QUrl("file:///" + m_downloadedDirectory));
-}
 
-void MainWindow::on_pushButtonPause_clicked()
-{
 
-}
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent* /*event*/)
 {
     qDebug() << "closeEvent is called";
-
-
 }
 
-void MainWindow::on_downloading_finished(void)
-{
-
-}
-
-void MainWindow::on_downloading_started(QString)
-{
-
-}
 
 void MainWindow::about()
 {

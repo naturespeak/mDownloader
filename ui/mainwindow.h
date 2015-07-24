@@ -53,28 +53,13 @@ public:
     const Downloader *downloaderForRow(int row) const;
 
 public slots:
-    void set_ProgressBarMinimum(int);
-    void set_ProgressBarValue(int);
-    void set_ProgressBarMaximum(int);
-    void set_labelTotal(QString);
-    void set_labelDownloaded(QString);
-    void set_labelDownloadSpeed(QString);
-    void set_labelRemainingTime(QString);
     void on_error_happens(QString);
     void set_newJobFileName(QString);
     void set_newJobDownloadedDirectory(QString);
     void addJob(QString fileName, QString DownDir, QString URL, int threadNUM);
 
 private slots:
-    void on_pushButtonNew_clicked();
-
-    void on_pushButtonOpenDir_clicked();
-
-    void on_pushButtonPause_clicked();
     virtual void closeEvent(QCloseEvent *);
-
-    void on_downloading_finished(void);
-    void on_downloading_started(QString);
 
     void about();
     void setActionsEnabled();
