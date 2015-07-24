@@ -62,9 +62,11 @@ Downloader::Downloader(QWidget *parent) :
 {
     sigint_received = false;
     m_status = new Status(this);
-    m_status->setDownloadStatus(Status::Idle);
+    setState(Status::Idle);
+    stateString = QT_TRANSLATE_NOOP(Downloader, "Idle");
     plugin = NULL;
     blocks = NULL;
+    toTalSize = QString("-1");
     localPath = NULL;
     localMg = NULL;
     pb = new ProgressBar;
@@ -322,6 +324,48 @@ Downloader::self(QThread *ptr_thread)
     }
 }
 
+void
+Downloader::setState(const Status::DownloadStatus state)
+{
+    m_status->setDownloadStatus(state);
+    switch (state) {
+    case Status::Idle:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Idle");
+        break;
+    case Status::Starting:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Starting");
+        break;
+    case Status::Downloading:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Downloading");
+        break;
+    case Status::Finished:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Finished");
+        break;
+    case Status::Failed:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Failed");
+        break;
+    case Status::Paused:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Paused");
+        break;
+    default:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Unkown status");
+        break;
+    }
+    emit stateChanged(stateString);
+}
+
+Status::DownloadStatus
+Downloader::getState() const
+{
+    return m_status->downloadStatus();
+}
+
+QString
+Downloader::getStateString() const
+{
+    return stateString;
+}
+
 int
 Downloader::download_thread(Downloader *downloader, QThread *ptr_thread)
 {
@@ -434,7 +478,7 @@ Downloader::save_temp_file_exit(void)
 
     if(task.get_file_size() < 0){
         qCritical() <<"!!!You can not continue in further"<<endl;
-        m_status->setDownloadStatus(Status::Failed);
+        setState(Status::Failed);
         exit(-1); // Is this right?
     }
 
@@ -472,7 +516,7 @@ Downloader::save_temp_file_exit(void)
     tempFile->close();
     delete tempFile;
 
-    m_status->setDownloadStatus(Status::Paused);
+    setState(Status::Paused);
     QString inforMsg = tr("Downloading paused.");
     emit errorHappened(inforMsg);
     emit done();
@@ -569,6 +613,7 @@ Downloader::pre_download_process(double start_time)
     convert_size(buf, task.get_file_size());
     qDebug() <<"Filesize: "<<buf<<endl;
     emit set_GuiLabelTotal(QString(buf));
+    toTalSize = QString(buf);
 
     if ( (ret=try_resume_from_paused()) < 0)
     {
@@ -597,7 +642,7 @@ Downloader::file_download(void)
 
     // update loop
     prepare_progress_bar();
-    m_status->setDownloadStatus(Status::Downloading);
+    setState(Status::Downloading);
     while(1){
         if(sigint_received){
             delete[] pb->data;
@@ -682,7 +727,7 @@ Downloader::report_done(double start_time)
     double time;
     QString errorMsg;
 
-    m_status->setDownloadStatus(Status::Finished);
+    setState(Status::Finished);
     time = get_current_time() - start_time;
     convert_time(buf, time);
     emit set_GuiProgressBarValue(100);
@@ -779,14 +824,14 @@ Downloader::runMyself(QString QUrl)
         qCritical() << "runMyself: QUrl is empty!" << endl;
     }
     start();
-    m_status->setDownloadStatus(Status::Starting);
+    setState(Status::Starting);
 }
 
 void
 Downloader::resumeTask(void)
 {
     sigint_received = false;
-    m_status->setDownloadStatus(Status::Starting);
+    setState(Status::Starting);
     start();
 }
 
@@ -806,7 +851,7 @@ Downloader::setLocalFileName(QString QFileName)
 void
 Downloader::quit(void)
 {
-    m_status->setDownloadStatus(Status::Paused);
+    setState(Status::Paused);
     catch_ctrl_c(2);
 }
 

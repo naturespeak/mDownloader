@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Initiallize headers
     QStringList headers;
     headers << tr("Name") << tr("Downloaded/Total") << tr("Progress") << tr("Speed")
-            << tr("Status");
+            << tr("Status") << tr("Remaining time");
 
     // Main job list
     jobView = new JobView(this);
@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     header->resizeSection(2, fm.width(headers.at(2) + "100%"));
     header->resizeSection(3, qMax(fm.width(headers.at(3) + "   "), fm.width(" 1023.0 KB/s")));
     header->resizeSection(4, qMax(fm.width(headers.at(4) + "   "), fm.width(tr("Downloading") + "   ")));
+    header->resizeSection(5, qMax(fm.width(headers.at(5) + "   "), fm.width(tr("--:--") + "   ")));
 
     // Create common actions
     QAction *newJobAction = new QAction(QIcon(":/ui/icons/bottom.png"), tr("Add &new job"), this);
@@ -126,13 +127,13 @@ void MainWindow::setActionsEnabled()
         item = jobView->selectedItems().first();
     }
     Downloader *downloader = item ? jobs.at(jobView->indexOfTopLevelItem(item)).downloader : 0;
-    bool pauseEnabled = downloader && ((downloader->m_status->downloadStatus() == Status::Paused)
-                                       || (downloader->m_status->downloadStatus() == Status::Idle));
+    bool pauseEnabled = downloader && ((downloader->getState() != Status::Paused)
+                                       || (downloader->getState() == Status::Idle));
 
     removeJobAction->setEnabled(item != 0);
     pauseJobAction->setEnabled(item != 0 && pauseEnabled);
 
-    if (downloader && downloader->m_status->downloadStatus() == Status::Paused)
+    if (downloader && downloader->getState() == Status::Paused)
     {
         pauseJobAction->setIcon(QIcon(":/ui/icons/player_play.png"));
         pauseJobAction->setText(tr("Resume job"));
@@ -151,7 +152,7 @@ QSize MainWindow::sizeHint() const
     // Add up the sizes of all header sections. The last section is
     // stretched, so its size is relative to the size of the width;
     // instead of counting it, we count the size of its largest value.
-    int width = fontMetrics().width(tr("Downloading") + "  ");
+    int width = fontMetrics().width(tr("Remaining time") + "         ");
     for (int i = 0; i < header->count() - 1; ++i)
         width += header->sectionSize(i);
 
@@ -203,6 +204,16 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
     downloader->setThreadNum(threadNUM);
 
     // Setup the downlader connections
+    connect(downloader, SIGNAL(stateChanged(QString)),
+            this, SLOT(updateState(QString)));
+    connect(downloader, SIGNAL(set_GuiProgressBarValue(int)),
+            this, SLOT(updateProgress(int)));
+    connect(downloader, SIGNAL(set_GuiLabelSpeed(QString)),
+            this, SLOT(updateDownloadRate(QString)));
+    connect(downloader, SIGNAL(set_GuiLabelDownloaded(QString)),
+            this, SLOT(updateDownloaded(QString)));
+    connect(downloader, SIGNAL(set_GuiLabelRemainingTime(QString)),
+            this, SLOT(updateRemainingTime(QString)));
 
 
     // Add the downloader to the list of downloading jobs.
@@ -224,6 +235,7 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
     item->setText(2, "0");
     item->setText(3, "0.0 KB/s");
     item->setText(4, tr("Idle"));
+    item->setText(5, "--:--");
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
     item->setTextAlignment(1, Qt::AlignHCenter);
 
@@ -248,6 +260,80 @@ void MainWindow::moveJobUp()
 void MainWindow::moveJobDown()
 {
 
+}
+
+int MainWindow::rowOfDownloader(Downloader *dloader) const
+{
+    // Return the row that displays this downloader's status or -1
+    // if the downloader is not known.
+    int row = 0;
+    foreach (Job job, jobs) {
+        if (job.downloader == dloader)
+            return row;
+        ++row;
+    }
+    return -1;
+}
+
+void MainWindow::updateState(QString state)
+{
+    // Update the state string whenever the downloader's state changes
+    Downloader *dloader = qobject_cast<Downloader *>(sender());
+    int row = rowOfDownloader(dloader);
+    QTreeWidgetItem *item = jobView->topLevelItem(row);
+    if (item)
+    {
+        item->setToolTip(0, tr("File: %1<br>Destination: %2<br>State: %3")
+                         .arg(jobs.at(row).fileName)
+                         .arg(jobs.at(row).destinationDir)
+                         .arg(state));
+
+        item->setText(4, state);
+    }
+    setActionsEnabled();
+}
+
+void MainWindow::updateProgress(int percent)
+{
+    Downloader *dloader = qobject_cast<Downloader *>(sender());
+    int row = rowOfDownloader(dloader);
+
+    // Update the progressbar.
+    QTreeWidgetItem *item = jobView->topLevelItem(row);
+    if (item)
+        item->setText(2, QString::number(percent) + QString("%"));
+}
+
+void MainWindow::updateDownloadRate(QString speed)
+{
+    Downloader *dloader = qobject_cast<Downloader *>(sender());
+    int row = rowOfDownloader(dloader);
+
+    // Update the download rate.
+    QTreeWidgetItem *item = jobView->topLevelItem(row);
+    if (item)
+        item->setText(3, speed);
+}
+
+void MainWindow::updateDownloaded(QString downloaded)
+{
+    Downloader *dloader = qobject_cast<Downloader *>(sender());
+    int row = rowOfDownloader(dloader);
+
+    QString result = downloaded + "/" + dloader->getTotalSize();
+    QTreeWidgetItem *item = jobView->topLevelItem(row);
+    if (item)
+        item->setText(1, result);
+}
+
+void MainWindow::updateRemainingTime(QString remainingTime)
+{
+    Downloader *dloader = qobject_cast<Downloader *>(sender());
+    int row = rowOfDownloader(dloader);
+
+    QTreeWidgetItem *item = jobView->topLevelItem(row);
+    if (item)
+        item->setText(5, remainingTime);
 }
 
 void MainWindow::on_pushButtonNew_clicked()

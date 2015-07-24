@@ -51,7 +51,12 @@ class Downloader: public QThread
         static int download_thread(Downloader *downloader, QThread *ptr_thread);
         int self(QThread *);
 
-        Status *m_status;   // Fix me: be private.
+        void setState(const Status::DownloadStatus state);
+        Status::DownloadStatus getState() const;
+
+        QString getStateString() const;
+
+        QString getTotalSize() const { return toTalSize;}
 
     public slots:
         void runMyself(QString);
@@ -72,6 +77,7 @@ class Downloader: public QThread
         void set_GuiLabelRemainingTime(QString);
         void errorHappened(QString);
         void done();
+        void stateChanged(QString);
 
 	private:
         int init_plugin(void);
@@ -112,8 +118,11 @@ class Downloader: public QThread
 		ProgressBar *pb;
         bool is_dirSetted;
         bool sigint_received;
+        Status *m_status;
 
-
+        QString toTalSize;
+        QString errorString;
+        QString stateString;
 };
 
 class DownloadWorker : public QObject

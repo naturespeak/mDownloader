@@ -86,6 +86,11 @@ private slots:
     void pauseJob();
     void moveJobUp();
     void moveJobDown();
+    void updateState(QString state);
+    void updateProgress(int percent);
+    void updateDownloadRate(QString speed);
+    void updateDownloaded(QString downloaded);
+    void updateRemainingTime(QString remainingTime);
 
 signals:
     void newTaskShow(void);
@@ -120,6 +125,8 @@ private:
     QList<Job> jobs;
     int jobsStopped;
     int jobsToStop;
+
+    int rowOfDownloader(Downloader *dloader) const;
 };
 
 #endif // MAINWINDOW_H
