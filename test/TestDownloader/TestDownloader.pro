@@ -30,7 +30,8 @@ SOURCES += tst_testdownloader.cc \
     ../../proxy.cpp \
     ../../task.cpp \
     ../../url.cpp \
-    ../../utils.cpp
+    ../../utils.cpp \
+    ../../status.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -52,4 +53,5 @@ HEADERS += \
     ../../proxy.h \
     ../../task.h \
     ../../url.h \
-    ../../utils.h
+    ../../utils.h \
+    ../../status.h

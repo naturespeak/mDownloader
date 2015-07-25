@@ -789,7 +789,9 @@ Downloader::resize_downloaded_file(void)
 int
 Downloader::rename_temp_file(void)
 {
-    if(rename(localMg, localPath) < 0){
+    QFile file(localMg);
+
+    if(!file.rename(localPath)){
         qCritical() << "Rename failed" << endl;
         emit errorHappened(QString(tr("Rename failed")));
         return -1;
