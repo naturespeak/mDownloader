@@ -42,25 +42,9 @@
 
 typedef void* (*threadFunction) (void*);
 
-void
-Downloader::catch_ctrl_c(int /*signo*/)
-{
-    qDebug() << endl << "downloadStatus(): " << m_status->downloadStatus();
-    if (m_status->downloadStatus() == Status::Paused)
-    {
-        sigint_received = true;
-        qDebug() << endl << "sigint_received: " << sigint_received << endl;
-    }else{
-        qDebug() << "Will exit." << endl;
-        exit(0);
-    }
-}
-
-
 Downloader::Downloader(QWidget *parent) :
     QThread(parent)
 {
-    sigint_received = false;
     m_status = new Status(this);
     setState(Status::Idle);
     stateString = QT_TRANSLATE_NOOP(Downloader, "Idle");
@@ -347,6 +331,12 @@ Downloader::setState(const Status::DownloadStatus state)
     case Status::Paused:
         stateString = QT_TRANSLATE_NOOP(Downloader, "Paused");
         break;
+    case Status::Pausing:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Pausing");
+        break;
+    case Status::Stopping:
+        stateString = QT_TRANSLATE_NOOP(Downloader, "Stopping");
+        break;
     default:
         stateString = QT_TRANSLATE_NOOP(Downloader, "Unkown status");
         break;
@@ -447,6 +437,42 @@ Downloader::schedule(void)
     }
 
     return threadNum - joined;
+}
+
+int
+Downloader::remove_temp_file_exit(void)
+{
+    int i;
+    QFile *tempFile;
+    QByteArray writeData;
+    int blockSize = 0;
+    QString error;
+
+    writeData.clear();
+
+    writeData.setNum(task.get_file_size());
+
+    blockSize = writeData.size();
+
+    writeData.clear();
+
+    for(i = 0; i < threadNum; i ++){
+        if(blocks[i].state != JOINED){
+            blocks[i].ptr_thread->quit();
+            blocks[i].ptr_thread->terminate();
+            blocks[i].ptr_thread->wait();
+            blocks[i].bufferFile.close();
+            blocks[i].state = STOP;
+        }
+    };
+
+
+    tempFile = new QFile(localMg);
+
+    tempFile->remove();
+    delete tempFile;
+
+    return 0;
 }
 
 int
@@ -644,9 +670,16 @@ Downloader::file_download(void)
     prepare_progress_bar();
     setState(Status::Downloading);
     while(1){
-        if(sigint_received){
+        if(getState() == Status::Pausing)
+        {
             delete[] pb->data;
             save_temp_file_exit();
+            return 0;
+        }
+        else if (getState() == Status::Stopping)
+        {
+            delete[] pb->data;
+            remove_temp_file_exit();
             return 0;
         }
 
@@ -823,14 +856,13 @@ Downloader::runMyself(QString QUrl)
     }else {
         qCritical() << "runMyself: QUrl is empty!" << endl;
     }
-    start();
     setState(Status::Starting);
+    start();
 }
 
 void
 Downloader::resumeTask(void)
 {
-    sigint_received = false;
     setState(Status::Starting);
     start();
 }
@@ -849,14 +881,32 @@ Downloader::setLocalFileName(QString QFileName)
 }
 
 void
-Downloader::quit(void)
+Downloader::pause(void)
 {
-    setState(Status::Paused);
-    catch_ctrl_c(2);
+    setState(Status::Pausing);
+}
+
+void
+Downloader::stop(void)
+{
+    setState(Status::Stopping);
 }
 
 void
 Downloader::setThreadNum(int num)
 {
     task.set_threadNum(num);
+}
+
+void
+Downloader::setPaused(bool paused)
+{
+    if (paused)
+    {
+        pause();
+    }
+    else
+    {
+        resumeTask();
+    }
 }

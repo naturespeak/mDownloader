@@ -110,6 +110,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(setActionsEnabled()));
     connect(newJobAction, SIGNAL(triggered()),
             this, SLOT(addJob()));
+    connect(pauseJobAction, SIGNAL(triggered()),
+            this, SLOT(pauseJob()));
+    connect(removeJobAction, SIGNAL(triggered()),
+            this, SLOT(removeJob()));
 }
 
 MainWindow::~MainWindow()
@@ -127,11 +131,18 @@ void MainWindow::setActionsEnabled()
         item = jobView->selectedItems().first();
     }
     Downloader *downloader = item ? jobs.at(jobView->indexOfTopLevelItem(item)).downloader : 0;
-    bool pauseEnabled = downloader && ((downloader->getState() != Status::Paused)
-                                       || (downloader->getState() == Status::Idle));
+    bool pauseEnabled = downloader && (downloader->getState() == Status::Downloading || downloader->getState() == Status::Paused /* for resume */);
 
-    removeJobAction->setEnabled(item != 0);
     pauseJobAction->setEnabled(item != 0 && pauseEnabled);
+
+    if (downloader && downloader->getState() != Status::Pausing && downloader->getState() != Status::Starting)
+    {
+        removeJobAction->setEnabled(item != 0);
+    }
+    else
+    {
+        removeJobAction->setEnabled(false);
+    }
 
     if (downloader && downloader->getState() == Status::Paused)
     {
@@ -241,12 +252,27 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
 
 void MainWindow::removeJob()
 {
+    // Find the row of the current item, and find the downloader
+    // for that row
+    int row = jobView->indexOfTopLevelItem(jobView->currentItem());
+    Downloader *dloader = jobs.at(row).downloader;
 
+    // Stop the downloader.
+    dloader->stop();
+
+    // Remove the row from the view.
+    delete jobView->takeTopLevelItem(row);
+    jobs.removeAt(row);
+    setActionsEnabled();
 }
 
 void MainWindow::pauseJob()
 {
-
+    // Pause or unpause the current job.
+    int row = jobView->indexOfTopLevelItem(jobView->currentItem());
+    Downloader *dloader = jobs.at(row).downloader;
+    dloader->setPaused(dloader->getState() != Status::Paused);
+    setActionsEnabled();
 }
 
 void MainWindow::moveJobUp()

@@ -63,8 +63,10 @@ class Downloader: public QThread
         void resumeTask(void);
         void setLocalDirectory(QString);
         void setLocalFileName(QString);
-        void quit(void);
+        void pause(void);
+        void stop(void);
         void setThreadNum(int);
+        void setPaused(bool paused);
 
     signals:
         void begin(Downloader *downloader, QThread *ptr_thread);
@@ -90,6 +92,7 @@ class Downloader: public QThread
 
 		int schedule(void);
         int save_temp_file_exit(void);
+        int remove_temp_file_exit(void);
         int is_already_existed(void);
         int create_downloading_threads(void);
         int pre_download_process(double start_time);
@@ -106,7 +109,6 @@ class Downloader: public QThread
 
         int post_download_process(double download_start_time);
 
-        void catch_ctrl_c(int signo);
 
 	private:
         Task task;
@@ -117,9 +119,7 @@ class Downloader: public QThread
 		Block *blocks;
 		ProgressBar *pb;
         bool is_dirSetted;
-        bool sigint_received;
         Status *m_status;
-
         QString toTalSize;
         QString errorString;
         QString stateString;

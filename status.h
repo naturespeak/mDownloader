@@ -41,13 +41,16 @@ public:
         ResumeDownload
     };
 
+    // Change Downloader::setState() if you change this.
     enum DownloadStatus{
         Idle,
         Starting,
         Downloading,
         Finished,
         Failed,
-        Paused
+        Paused,
+        Pausing,
+        Stopping
     };
 
     QString downloadModeString() const;
