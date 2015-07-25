@@ -65,7 +65,11 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 int main(int argc, char *argv[])
 {   
-    qInstallMessageHandler(myMessageOutput);
+    if (QLibraryInfo::isDebugBuild())
+    {
+        qInstallMessageHandler(myMessageOutput);
+    }
+
     QApplication a(argc, argv);
 
     QTranslator qtTranslator;
