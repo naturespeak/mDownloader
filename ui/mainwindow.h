@@ -69,6 +69,7 @@ private slots:
     bool addJob();
     void removeJob();
     void pauseJob();
+    void openDir();
     void moveJobUp();
     void moveJobDown();
     void updateState(QString state);
@@ -95,6 +96,7 @@ private:
     JobView *jobView;
     QAction *pauseJobAction;
     QAction *removeJobAction;
+    QAction *openDirAction;
 
     struct Job {
         QString fileName;

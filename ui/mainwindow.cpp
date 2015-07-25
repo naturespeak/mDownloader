@@ -84,12 +84,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *newJobAction = new QAction(QIcon(":/ui/icons/bottom.png"), tr("Add &new job"), this);
     pauseJobAction = new QAction(QIcon(":/ui/icons/player_pause.png"), tr("&Pause job"), this);
     removeJobAction = new QAction(QIcon(":/ui/icons/player_stop.png"), tr("&Remove job"), this);
+    openDirAction = new QAction(QIcon(":/ui/icons/folder.png"), tr("Open file &directory"), this);
 
     // File menu
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newJobAction);
     fileMenu->addAction(pauseJobAction);
     fileMenu->addAction(removeJobAction);
+    fileMenu->addAction(openDirAction);
     fileMenu->addSeparator();
     fileMenu->addAction(QIcon(":/ui/icons/exit.png"), tr("E&xit"), this, SLOT(close()));
 
@@ -104,6 +106,10 @@ MainWindow::MainWindow(QWidget *parent) :
     topBar->addAction(newJobAction);
     topBar->addAction(pauseJobAction);
     topBar->addAction(removeJobAction);
+    topBar->addAction(openDirAction);
+    pauseJobAction->setEnabled(false);
+    removeJobAction->setEnabled(false);
+    openDirAction->setEnabled(false);
 
     // Set up connections
     connect(jobView, SIGNAL(itemSelectionChanged()),
@@ -114,6 +120,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(pauseJob()));
     connect(removeJobAction, SIGNAL(triggered()),
             this, SLOT(removeJob()));
+    connect(openDirAction, SIGNAL(triggered()),
+            this, SLOT(openDir()));
 }
 
 MainWindow::~MainWindow()
@@ -132,7 +140,9 @@ void MainWindow::setActionsEnabled()
     }
     Downloader *downloader = item ? jobs.at(jobView->indexOfTopLevelItem(item)).downloader : 0;
     bool pauseEnabled = downloader && (downloader->getState() == Status::Downloading || downloader->getState() == Status::Paused /* for resume */);
+    bool openDirEnabled = downloader && downloader->getState() != Status::Idle;
 
+    openDirAction->setEnabled(item != 0 && openDirEnabled);
     pauseJobAction->setEnabled(item != 0 && pauseEnabled);
 
     if (downloader && downloader->getState() != Status::Pausing && downloader->getState() != Status::Starting)
@@ -275,6 +285,14 @@ void MainWindow::pauseJob()
     setActionsEnabled();
 }
 
+void MainWindow::openDir()
+{
+    // Open the save directory of the current job.
+    int row = jobView->indexOfTopLevelItem(jobView->currentItem());
+    QDesktopServices::openUrl(QUrl("file:///" + jobs.at(row).destinationDir));
+    setActionsEnabled();
+}
+
 void MainWindow::moveJobUp()
 {
 
@@ -374,10 +392,6 @@ void MainWindow::on_error_happens(QString errorMsg)
         m_has_error_happend = false;
     }
 }
-
-
-//    QDesktopServices::openUrl(QUrl("file:///" + m_downloadedDirectory));
-
 
 
 void MainWindow::closeEvent(QCloseEvent* /*event*/)

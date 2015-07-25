@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QUuid>
+#include <QUrl>
 
 
 #include "newtask.h"
@@ -59,12 +60,20 @@ void NewTask::showMyself(void)
 
 void NewTask::on_buttonBoxWhetherOk_accepted()
 {
-    emit setDownloadedDirectory(m_dir);
-    emit setFileName(ui->lineEditFileName->text());
-    emit setSaveLocation(ui->lineEditSaveLocation->text());
-    emit setThreadNum(ui->spinBoxThreadNum->value());
-    emit runDownloader(ui->lineEditUrl->text());
-    emit newJob(ui->lineEditFileName->text(), m_dir, ui->lineEditUrl->text(), ui->spinBoxThreadNum->value());
+    if (QUrl(ui->lineEditUrl->text()).isValid() && QUrl(ui->lineEditFileName->text()).isValid())
+    {
+        printf("URL is valid\n");
+        emit setDownloadedDirectory(m_dir);
+        emit setFileName(ui->lineEditFileName->text());
+        emit setSaveLocation(ui->lineEditSaveLocation->text());
+        emit setThreadNum(ui->spinBoxThreadNum->value());
+        emit runDownloader(ui->lineEditUrl->text());
+        emit newJob(ui->lineEditFileName->text(), m_dir, ui->lineEditUrl->text(), ui->spinBoxThreadNum->value());
+    }
+    else
+    {
+        printf("URL is not valid\n");
+    }
 }
 
 void NewTask::setFileNameSlot(QString Url)

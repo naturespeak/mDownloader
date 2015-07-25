@@ -9,5 +9,6 @@
         <file>ui/icons/player_play.png</file>
         <file>ui/icons/player_stop.png</file>
         <file>ui/icons/stop.png</file>
+        <file>ui/icons/folder.png</file>
     </qresource>
 </RCC>
