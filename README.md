@@ -29,4 +29,4 @@ All tests are under folder test. You'd better run the tests under Windows 7, bec
 # Latest official build 
 
 http://qinchuan.me/downloads/mDownloader-Setup-1.0.1Build005.exe
-
+SHA-256: 39ee0e0a8c253329852649387d1eb8b6ab9fc9d10cc489f34977d61ff771dcf8
