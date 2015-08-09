@@ -21,10 +21,10 @@ public:
     QThread hashWorkerThread;
 
 private Q_SLOTS:
-    void initTestCase();
-    void testCase1_data();
-    void testCase1();
+    void testDownloader_data();
+    void testDownloader();
     void init();
+    void cleanup();
 
 signals:
     void operate(QString, QString);
@@ -59,12 +59,6 @@ void TestDownloader::setHash(QString hashVal)
     m_hash = hashVal;
 }
 
-void TestDownloader::initTestCase()
-{
-    QFile file(TEMP_FILE);
-    file.remove();
-    QCOMPARE(file.exists(), false);
-}
 
 void TestDownloader::init()
 {
@@ -72,7 +66,13 @@ void TestDownloader::init()
     QCOMPARE(file.exists(), false);
 }
 
-void TestDownloader::testCase1_data()
+void TestDownloader::cleanup()
+{
+    QFile file(TEMP_FILE);
+    file.remove();
+}
+
+void TestDownloader::testDownloader_data()
 {
     QTest::addColumn<QString>("URLVal");
     QTest::addColumn<QString>("nThreads");
@@ -97,7 +97,7 @@ void TestDownloader::testCase1_data()
     }
 }
 
-void TestDownloader::testCase1()
+void TestDownloader::testDownloader()
 {
     m_hash = QString("");
 

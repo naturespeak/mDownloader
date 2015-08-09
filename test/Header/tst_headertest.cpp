@@ -10,10 +10,12 @@ public:
     HeaderTest();
 
 private Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
-    void testCase1_data();
-    void testCase1();
+    void init();
+    void cleanup();
+    void test_set_attr_data();
+    void test_set_attr();
+    void test_get_attr_data();
+    void test_get_attr();
 
 private:
     HeadData *t_header;
@@ -23,24 +25,24 @@ HeaderTest::HeaderTest()
 {
 }
 
-void HeaderTest::initTestCase()
+void HeaderTest::init()
 {
     t_header = new HeadData;
 }
 
-void HeaderTest::cleanupTestCase()
+void HeaderTest::cleanup()
 {
     delete t_header;
 }
 
-void HeaderTest::testCase1_data()
+void HeaderTest::test_set_attr_data()
 {
     QTest::addColumn<QString>("attrName");
     QTest::addColumn<QString>("attrValue");
     QTest::newRow("set_attr") << QString("Connection") << QString("close");
 }
 
-void HeaderTest::testCase1()
+void HeaderTest::test_set_attr()
 {
     QFETCH(QString, attrName);
     QFETCH(QString, attrValue);
@@ -49,6 +51,22 @@ void HeaderTest::testCase1()
     QCOMPARE(QString(t_header->head->attrName), QString("Connection"));
     QCOMPARE(QString(t_header->head->attrValue), QString("close"));
     QVERIFY2(t_header->head->next == NULL, "next is not NULL");
+}
+
+void HeaderTest::test_get_attr_data()
+{
+    QTest::addColumn<QString>("attrName");
+    QTest::addColumn<QString>("attrValue");
+    QTest::newRow("get_attr") << QString("Connection") << QString("close");
+}
+
+void HeaderTest::test_get_attr()
+{
+    QFETCH(QString, attrName);
+    QFETCH(QString, attrValue);
+    t_header->set_attr(attrName.toStdString().c_str(), attrValue.toStdString().c_str());
+
+    QCOMPARE(QString(t_header->get_attr("Connection")), QString("close"));
 }
 
 QTEST_APPLESS_MAIN(HeaderTest)
