@@ -39,7 +39,8 @@ void HeaderTest::test_set_attr_data()
 {
     QTest::addColumn<QString>("attrName");
     QTest::addColumn<QString>("attrValue");
-    QTest::newRow("set_attr") << QString("Connection") << QString("close");
+    QTest::newRow("set_attr, add Node") << QString("Connection") << QString("close");
+    QTest::newRow("set_attr, modify Node") << QString("Connection") << QString("close!close!");
 }
 
 void HeaderTest::test_set_attr()
@@ -48,9 +49,8 @@ void HeaderTest::test_set_attr()
     QFETCH(QString, attrValue);
     t_header->set_attr(attrName.toStdString().c_str(), attrValue.toStdString().c_str());
 
-    QCOMPARE(QString(t_header->head->attrName), QString("Connection"));
-    QCOMPARE(QString(t_header->head->attrValue), QString("close"));
-    QVERIFY2(t_header->head->next == NULL, "next is not NULL");
+    QCOMPARE(QString(t_header->head->attrName), QString(attrName.toStdString().c_str()));
+    QCOMPARE(QString(t_header->head->attrValue), QString(attrValue.toStdString().c_str()));
 }
 
 void HeaderTest::test_get_attr_data()
@@ -67,6 +67,7 @@ void HeaderTest::test_get_attr()
     t_header->set_attr(attrName.toStdString().c_str(), attrValue.toStdString().c_str());
 
     QCOMPARE(QString(t_header->get_attr("Connection")), QString("close"));
+    QVERIFY2(t_header->get_attr("NoNoNo") == NULL, "get_attr of non-exist attribute is not NULL");
 }
 
 QTEST_APPLESS_MAIN(HeaderTest)
