@@ -95,7 +95,7 @@ HeadData::set_attr(const char *attrName, const char *attrValue)
         head = it;
         return 1;
     }
-};
+}
 
 int
 HeadData::remove_attr(const char *attrName)
@@ -113,17 +113,19 @@ HeadData::remove_attr(const char *attrName)
         if(it == head){
             head = it->next;
             delete it;
+            it = NULL;
         }else{
             HeadDataNode *pre;
             for(pre = head; pre->next != it; it = it->next) ;
             pre->next = it->next;
             delete it;
+            it = NULL;
         }
         return 0;
     }else{
         return 1;
     }
-};
+}
 
 void
 HeadData::remove_all()
