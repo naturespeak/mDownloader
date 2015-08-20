@@ -97,36 +97,6 @@ HeadData::set_attr(const char *attrName, const char *attrValue)
     }
 }
 
-int
-HeadData::remove_attr(const char *attrName)
-{
-    HeadDataNode *it;
-
-    assert(attrName != NULL);
-
-    for(it = head; it != NULL; it = it->next){
-        if(strcmp(attrName, it->attrName) == 0)
-            break;
-    }
-
-    if(it != NULL){
-        if(it == head){
-            head = it->next;
-            delete it;
-            it = NULL;
-        }else{
-            HeadDataNode *pre;
-            for(pre = head; pre->next != it; it = it->next) ;
-            pre->next = it->next;
-            delete it;
-            it = NULL;
-        }
-        return 0;
-    }else{
-        return 1;
-    }
-}
-
 void
 HeadData::remove_all()
 {
@@ -137,18 +107,6 @@ HeadData::remove_all()
     }
 
     head = NULL;
-};
+}
 
-int
-HeadData::traversal( int(*trav_fun)(HeadDataNode*) )
-{
-    HeadDataNode *it;
-    int ret;
-
-    for(it = head; it != NULL; it = it->next){
-        if((ret=trav_fun(it)) != 0) return ret;
-    }
-
-	return 0;
-};
 

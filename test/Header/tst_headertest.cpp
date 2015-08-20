@@ -16,8 +16,6 @@ private Q_SLOTS:
     void test_set_attr();
     void test_get_attr_data();
     void test_get_attr();
-    void test_remove_attr_data();
-    void test_remove_attr();
 
 private:
     HeadData *t_header;
@@ -72,29 +70,6 @@ void HeaderTest::test_get_attr()
     QVERIFY2(t_header->get_attr("NoNoNo") == NULL, "get_attr of non-exist attribute is not NULL");
 }
 
-void HeaderTest::test_remove_attr_data()
-{
-    QTest::addColumn<QString>("attrName");
-    QTest::addColumn<QString>("attrValue");
-    QTest::newRow("remove_attr") << QString("Connection") << QString("close");
-}
-
-void HeaderTest::test_remove_attr()
-{
-    QFETCH(QString, attrName);
-    QFETCH(QString, attrValue);
-
-    QVERIFY2(t_header->remove_attr("Connection") == 1, "remove_attr on an empty list is error");
-    t_header->set_attr(attrName.toStdString().c_str(), attrValue.toStdString().c_str());
-    QVERIFY2(t_header->remove_attr(attrName.toStdString().c_str()) == 0, "remove_attr on head is error");
-    QVERIFY2(t_header->head == NULL, "remove_attr doesn't actually set head to NULL");
-
-    t_header->set_attr("She", "A godess");
-    t_header->set_attr("He", "A god");
-
-    QVERIFY2(t_header->remove_attr("She") == 0, "remove_attr on !head is error");
-    QVERIFY2(t_header->head->next == NULL, "remove_attr doesn't actually set !head to NULL");
-}
 
 QTEST_APPLESS_MAIN(HeaderTest)
 
