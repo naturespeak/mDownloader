@@ -232,6 +232,7 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
             this, SLOT(updateDownloaded(QString)));
     connect(downloader, SIGNAL(set_GuiLabelRemainingTime(QString)),
             this, SLOT(updateRemainingTime(QString)));
+    connect(downloader, SIGNAL(errorHappened(QString)), this, SLOT(on_error_happens(QString)));
 
 
     // Add the downloader to the list of downloading jobs.
@@ -388,6 +389,8 @@ void MainWindow::on_error_happens(QString errorMsg)
     // When the downloading succeeds m_has_error_happend should keep to be false.
     if (!errorMsg.contains(tr("Download successfully in"))) {
         m_has_error_happend = true;
+        m_eMsgBox.DisplayError(errorMsg);
+        qCritical() << "Error happened: " << errorMsg << endl;
     } else {
         m_has_error_happend = false;
     }

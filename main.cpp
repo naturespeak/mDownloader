@@ -24,7 +24,6 @@
 #include "ui/mainwindow.h"
 #include "ui/newtask.h"
 #include "myget.h"
-#include "errormessagebox.h"
 
 #include <QObject>
 #include <QApplication>

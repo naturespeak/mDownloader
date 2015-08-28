@@ -30,6 +30,7 @@
 
 #include <QProgressDialog>
 #include "../downloader.h"
+#include "errormessagebox.h"
 #include "jobview.h"
 
 QT_BEGIN_NAMESPACE
@@ -86,6 +87,7 @@ signals:
 private:
     qint64 speedBytesPerSecond;
     bool m_has_error_happend;
+    ErrorMessageBox m_eMsgBox;
     QMessageBox msgBox;
 
     QProgressDialog *quitDialog;

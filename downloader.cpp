@@ -628,7 +628,7 @@ Downloader::pre_download_process(double start_time)
 
     // Already done...
     if (is_already_existed())
-        return 0;
+        return 3;
     if(task.get_file_size() == 0){
         if ( (ret =create_zero_file()) == 0)
             report_done(start_time);
@@ -659,11 +659,19 @@ int
 Downloader::file_download(void)
 {
     double time = get_current_time();
+    int pre_return = -100;  // -100, a value that's impossible.
 
-    if(pre_download_process(time) != 0)
+    if((pre_return=pre_download_process(time)) != 0)
     {
-        qCritical() << "pre_download_processing failed" << endl;
-        return -1;
+        if (pre_return == 3)   // file already exists.
+        {
+            setState(Status::Finished);
+            return -3;
+        }
+        else {
+            qCritical() << "pre_download_processing failed" << endl;
+            return -1;
+        }
     }
 
     // update loop
