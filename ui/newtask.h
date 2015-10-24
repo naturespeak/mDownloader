@@ -41,17 +41,22 @@ public:
     ~NewTask();
 
 private slots:
+    void loadSettings();
+    void saveSettings();
+
     void showMyself(void);
     void on_buttonBoxWhetherOk_accepted();
     void on_pushButtonSetSaveLocation_clicked();
     void setFileNameSlot(QString);
 
+protected:
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Ui::NewTask *ui;
-    QString m_dir;
+    QString m_lastDirectory;
     QString m_localFileName;
-
+    bool m_saveChanges;
 
 signals:
     void newJob(QString fileName, QString DownloadedDirectory, QString URL, int threadNum);
