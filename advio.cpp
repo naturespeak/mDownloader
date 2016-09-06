@@ -47,7 +47,7 @@ PluginIO::~PluginIO()
 }
 
 int
-PluginIO::read_data(char *buffer, int maxsize)
+PluginIO::readData(char *buffer, int maxsize)
 {
 	// this function is a virtual function and must
 	// be overloaded by the base class of the plugin
@@ -146,14 +146,14 @@ BufferFile::truncate(qint64 length)
 // is used to real-time reflect the change, if the length is set
 // to -1, this function will read all the data
 qint64
-BufferFile::retr_data_from(PluginIO *pio, qint64 *rtlength, qint64 length)
+BufferFile::retrieveDataFrom(PluginIO *pio, qint64 *rtlength, qint64 length)
 {
 	assert(pio != NULL);
 	int ret;
 	qint64 data_count = 0;
 
 	while(1){
-		ret = pio->read_data(ptr, left);
+        ret = pio->readData(ptr, left);
 		if(ret == 0){
 			break;
 		}else if(ret < 0){

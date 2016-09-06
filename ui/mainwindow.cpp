@@ -45,15 +45,13 @@
 
 #include "mainwindow.h"
 
-extern void
-catch_ctrl_c(int signo);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     quitDialog(0), saveChanges(false),
     newJobFileName(""), newJobDestinationDirectory("")
 {
-    m_has_error_happend = false;
+    isErrorHappend = false;
     QMetaObject::invokeMethod(this, "loadSettings", Qt::QueuedConnection);
     setWindowIcon(QIcon(":/ui/icons/motocool.jpg"));
 
@@ -181,12 +179,12 @@ QSize MainWindow::sizeHint() const
         .expandedTo(QApplication::globalStrut());
 }
 
-void MainWindow::set_newJobFileName(QString newFileName)
+void MainWindow::setNewJobFileName(QString newFileName)
 {
     newJobFileName = newFileName;
 }
 
-void MainWindow::set_newJobDownloadedDirectory(QString newDownDir)
+void MainWindow::setNewJobDownloadedDirectory(QString newDownDir)
 {
     newJobDestinationDirectory = newDownDir;
 }
@@ -232,7 +230,7 @@ void MainWindow::addJob(QString fileName, QString DownDir, QString URL, int thre
             this, SLOT(updateDownloaded(QString)));
     connect(downloader, SIGNAL(set_GuiLabelRemainingTime(QString)),
             this, SLOT(updateRemainingTime(QString)));
-    connect(downloader, SIGNAL(errorHappened(QString)), this, SLOT(on_error_happens(QString)));
+    connect(downloader, SIGNAL(errorHappened(QString)), this, SLOT(onErrorHappens(QString)));
 
 
     // Add the downloader to the list of downloading jobs.
@@ -384,15 +382,15 @@ const Downloader *MainWindow::downloaderForRow(int row) const
 }
 
 
-void MainWindow::on_error_happens(QString errorMsg)
+void MainWindow::onErrorHappens(QString errorMsg)
 {
-    // When the downloading succeeds m_has_error_happend should keep to be false.
+    // When the downloading succeeds has_error_happend should keep to be false.
     if (!errorMsg.contains(tr("Download successfully in"))) {
-        m_has_error_happend = true;
-        m_eMsgBox.DisplayError(errorMsg);
+        isErrorHappend = true;
+        errorMessageBox.DisplayError(errorMsg);
         qCritical() << "Error happened: " << errorMsg << endl;
     } else {
-        m_has_error_happend = false;
+        isErrorHappend = false;
     }
 }
 
@@ -413,7 +411,7 @@ void MainWindow::about()
     about += tr("Written by Chuan Qin. Email: qc2105@qq.com");
     about += QChar::LineSeparator;
     about += tr("It is based on Qt, and licensed under GPL.");
-    msgBox.setWindowTitle(tr("mDownloader"));
-    msgBox.setText(about);
-    msgBox.exec();
+    messageBox.setWindowTitle(tr("mDownloader"));
+    messageBox.setText(about);
+    messageBox.exec();
 }

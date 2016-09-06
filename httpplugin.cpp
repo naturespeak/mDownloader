@@ -243,7 +243,7 @@ HttpPlugin::download(Task& task, Block *block)
 
 _re_retr:
 	block->state = RETR;
-	if(block->bufferFile.retr_data_from(&http, &block->downloaded,
+	if(block->bufferFile.retrieveDataFrom(&http, &block->downloaded,
 				block->size - block->downloaded) < 0){
 		block->state = STOP;
 		return -2;

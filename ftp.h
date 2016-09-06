@@ -76,7 +76,7 @@ class Ftp
 		// set the data-type:A(ASCII) or I(binary)
 		int type(const char *type);
 		// get the data from dataConn
-		int read_data(char *buf, int maxsize);
+		int readData(char *buf, int maxsize);
 		// read a line from the dataConn
 		int gets_data(char *buf, int maxsize);
 		// get all the data?

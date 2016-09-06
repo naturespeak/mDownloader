@@ -164,7 +164,7 @@ FtpPlugin::download(Task &task, Block *block)
 
 _re_retr:
 	block->state = RETR;
-	if(block->bufferFile.retr_data_from(&ftp, &block->downloaded,
+	if(block->bufferFile.retrieveDataFrom(&ftp, &block->downloaded,
 				block->size - block->downloaded) < 0){
 		block->state = STOP;
 		return -2;

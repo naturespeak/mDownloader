@@ -36,14 +36,14 @@
 
 
 NewTask::NewTask(QWidget *parent) :
-    QDialog(parent), m_saveChanges(false),
+    QDialog(parent), isChangesSaved(false),
     ui(new Ui::NewTask)
 {
     ui->setupUi(this);
 
     loadSettings();
     ui->lineEditUrl->setText(tr("Paste or input the URL of the file you want to download here."));
-    ui->lineEditSaveLocation->setText(m_lastDirectory + QDir::separator() + ui->lineEditFileName->text());
+    ui->lineEditSaveLocation->setText(lastDirectory + QDir::separator() + ui->lineEditFileName->text());
     ui->spinBoxThreadNum->setMinimum(1);
     ui->spinBoxThreadNum->setValue(1);
     connect(ui->lineEditUrl, SIGNAL(textChanged(QString)), this, SLOT(setFileNameSlot(QString)));
@@ -63,31 +63,31 @@ void NewTask::on_buttonBoxWhetherOk_accepted()
 {
     if (QUrl(ui->lineEditUrl->text()).isValid() && QUrl(ui->lineEditFileName->text()).isValid())
     {
-        emit setDownloadedDirectory(m_lastDirectory);
+        emit setDownloadedDirectory(lastDirectory);
         emit setFileName(ui->lineEditFileName->text());
         emit setSaveLocation(ui->lineEditSaveLocation->text());
         emit setThreadNum(ui->spinBoxThreadNum->value());
         emit runDownloader(ui->lineEditUrl->text());
-        emit newJob(ui->lineEditFileName->text(), m_lastDirectory, ui->lineEditUrl->text(), ui->spinBoxThreadNum->value());
+        emit newJob(ui->lineEditFileName->text(), lastDirectory, ui->lineEditUrl->text(), ui->spinBoxThreadNum->value());
     }
 }
 
 void NewTask::setFileNameSlot(QString Url)
 {
-    m_localFileName = Url.section("/", -1);
-    if (m_localFileName.isEmpty()) {
-        m_localFileName = "index.html";
+    localFileName = Url.section("/", -1);
+    if (localFileName.isEmpty()) {
+        localFileName = "index.html";
     }
-    ui->lineEditFileName->setText(/*"file-" + QUuid::createUuid().toString()+ */m_localFileName);
-    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_lastDirectory + QDir::separator() +  /*"file-" + QUuid::createUuid().toString()+*/ m_localFileName));
+    ui->lineEditFileName->setText(/*"file-" + QUuid::createUuid().toString()+ */localFileName);
+    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(lastDirectory + QDir::separator() +  /*"file-" + QUuid::createUuid().toString()+*/ localFileName));
 }
 
 void NewTask::on_pushButtonSetSaveLocation_clicked()
 {
-    m_lastDirectory = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::homePath(), QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
-    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(m_lastDirectory + QDir::separator() + ui->lineEditFileName->text()));
-    if (!m_saveChanges) {
-        m_saveChanges = true;
+    lastDirectory = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::homePath(), QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
+    ui->lineEditSaveLocation->setText(QDir::toNativeSeparators(lastDirectory + QDir::separator() + ui->lineEditFileName->text()));
+    if (!isChangesSaved) {
+        isChangesSaved = true;
         QTimer::singleShot(1000, this, SLOT(saveSettings()));
     }
 }
@@ -95,22 +95,22 @@ void NewTask::on_pushButtonSetSaveLocation_clicked()
 void NewTask::loadSettings()
 {
     QSettings settings("linuxqc", "mDownloader");
-    m_lastDirectory = settings.value("m_lastDirectory").toString();
-    if (m_lastDirectory.isEmpty())
-        m_lastDirectory = QDir::toNativeSeparators(QDir::homePath());
+    lastDirectory = settings.value("lastDirectory").toString();
+    if (lastDirectory.isEmpty())
+        lastDirectory = QDir::toNativeSeparators(QDir::homePath());
 }
 
 void NewTask::saveSettings()
 {
-    if (!m_saveChanges)
+    if (!isChangesSaved)
       return;
-    m_saveChanges = false;
+    isChangesSaved = false;
 
     // Prepare and reset the settings
     QSettings settings("linuxqc", "mDownloader");
     settings.clear();
 
-    settings.setValue("m_lastDirectory", m_lastDirectory);
+    settings.setValue("lastDirectory", lastDirectory);
 
     settings.sync();
 }
@@ -118,6 +118,6 @@ void NewTask::saveSettings()
 void NewTask::closeEvent(QCloseEvent */*event*/)
 {
     saveSettings();
-    m_saveChanges = false;
+    isChangesSaved = false;
 }
 

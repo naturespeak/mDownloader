@@ -446,7 +446,7 @@ Ftp::quit()
 
 // get maxsize bytes, will be used by RETR
 int
-Ftp::read_data(char *buffer, int maxsize)
+Ftp::readData(char *buffer, int maxsize)
 {
     qDataSock->waitForReadyRead(timeout * 1000);
     return qDataSock->read(buffer, maxsize);

@@ -84,7 +84,7 @@ class Http
 		// accept range or not
 		bool accept_ranges();
 		// read maxsize data from the data section
-		int read_data(char *buffer, int maxsize);
+		int readData(char *buffer, int maxsize);
 		// is data_ends ?, this is not very resonable
 		int data_ends();
 

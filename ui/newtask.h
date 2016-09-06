@@ -54,9 +54,9 @@ protected:
 
 private:
     Ui::NewTask *ui;
-    QString m_lastDirectory;
-    QString m_localFileName;
-    bool m_saveChanges;
+    QString lastDirectory;
+    QString localFileName;
+    bool isChangesSaved;
 
 signals:
     void newJob(QString fileName, QString DownloadedDirectory, QString URL, int threadNum);

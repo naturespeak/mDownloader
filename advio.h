@@ -50,7 +50,7 @@ public:
     PluginIO();
     ~PluginIO();
 
-    virtual int read_data(char *buffer, int maxsize);
+    virtual int readData(char *buffer, int maxsize);
 };
 
 class BufferFile
@@ -63,7 +63,7 @@ public:
     void close();
 
     qint64 seek(qint64 off_set);
-    qint64 retr_data_from(PluginIO *pio, qint64 *rtlength, qint64 length = -1);
+    qint64 retrieveDataFrom(PluginIO *pio, qint64 *rtlength, qint64 length = -1);
 
 private:
     char buf[FILE_BUFFER_SIZE];

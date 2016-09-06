@@ -54,9 +54,9 @@ public:
     const Downloader *downloaderForRow(int row) const;
 
 public slots:
-    void on_error_happens(QString);
-    void set_newJobFileName(QString);
-    void set_newJobDownloadedDirectory(QString);
+    void onErrorHappens(QString);
+    void setNewJobFileName(QString);
+    void setNewJobDownloadedDirectory(QString);
     void addJob(QString fileName, QString DownDir, QString URL, int threadNUM);
 
 private slots:
@@ -81,14 +81,14 @@ private slots:
 
 signals:
     void newTaskShow(void);
-    void m_quit(void);
+    void quit(void);
     void resumeTask(void);
 
 private:
     qint64 speedBytesPerSecond;
-    bool m_has_error_happend;
-    ErrorMessageBox m_eMsgBox;
-    QMessageBox msgBox;
+    bool isErrorHappend;
+    ErrorMessageBox errorMessageBox;
+    QMessageBox messageBox;
 
     QProgressDialog *quitDialog;
 

@@ -364,7 +364,7 @@ Http::accept_ranges()
 }
 
 int
-Http::read_data(char *buffer, int maxsize)
+Http::readData(char *buffer, int maxsize)
 {
 	int ret;
 
